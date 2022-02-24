@@ -1454,6 +1454,7 @@ Claims Settlement Agreement Reached
 <div class="greybox" align="left">
 
 <img src="images/icons/bullet_blue.gif" width="8" height="8" />
+<img src="./attachments/251330730/251134171.png" alt="first-image" class="small" />
 [image-20200918-031831.png](attachments/251330730/251134171.png)
 (image/png)  
 <img src="images/icons/bullet_blue.gif" width="8" height="8" />
