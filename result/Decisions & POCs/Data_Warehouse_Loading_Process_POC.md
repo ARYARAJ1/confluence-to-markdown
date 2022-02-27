@@ -6,7 +6,7 @@ The following code provides a toy example of performing <a
 href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/567148575/Data+Warehouse+Loading+Pattern+Design?focusedCommentId=606732305#comment-606732305"
 data-card-appearance="inline"
 rel="nofollow">https://vmia.atlassian.net/wiki/spaces/SDI/pages/567148575/Data+Warehouse+Loading+Pattern+Design?focusedCommentId=606732305#comment-606732305</a>
-in the <a href="Data_Warehouse_Pipeline_-_3._Process.md"
+in the <a href="Data_Warehouse_Pipeline_-_3._Process"
 data-linked-resource-id="469860353" data-linked-resource-version="42"
 data-linked-resource-type="page">Data Warehouse Pipeline - 3.
 Process</a>.

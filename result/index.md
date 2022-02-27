@@ -1,3 +1,3 @@
--   [Decision &
-    Endorsements\\index.md](Decision%20&%20Endorsements\index.md)
--   [Decisions & POCs\\index.md](Decisions%20&%20POCs\index.md)
+-   [Decision & Endorsements\\index](Decision%20&%20Endorsements\index)
+-   [Decisions & POCs\\index](Decisions%20&%20POCs\index)
+-   [SDI\\index](SDI\index)

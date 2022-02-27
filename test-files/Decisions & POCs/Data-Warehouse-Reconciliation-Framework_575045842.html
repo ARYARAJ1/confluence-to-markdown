@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SDI : Data Warehouse Reconciliation Framework</title>
+        <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body class="theme-default aui-theme-default">
+        <div id="page">
+            <div id="main" class="aui-page-panel">
+                <div id="main-header">
+                    <div id="breadcrumb-section">
+                        <ol id="breadcrumbs">
+                            <li class="first">
+                                <span><a href="index.html">SDI</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="1205338136.html">Decisions/POCs</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="Data-Warehouse-POC_1070989328.html">Data Warehouse POC</a></span>
+                            </li>
+                                                </ol>
+                    </div>
+                    <h1 id="title-heading" class="pagetitle">
+                                                <span id="title-text">
+                            SDI : Data Warehouse Reconciliation Framework
+                        </span>
+                    </h1>
+                </div>
+
+                <div id="content" class="view">
+                    <div class="page-metadata">
+                        
+        
+    
+        
+    
+        
+        
+            Created by <span class='author'> Sarah Fan (Deactivated)</span>, last modified by <span class='editor'> h.lindsaysmith@vmia.vic.gov.au Lindsay-Smith</span> on Mar 31, 2021
+                        </div>
+                    <div id="main-content" class="wiki-content group">
+                    <h1 id="DataWarehouseReconciliationFramework-Introduction">Introduction</h1><p>As mentioned in <a href="Data-Warehouse-Loading-Pattern-Design_567148575.html" data-linked-resource-id="567148575" data-linked-resource-version="21" data-linked-resource-type="page">Data Warehouse Loading Pattern Design</a>, there will be a number of bespoke stored procedures used to produce the intermediary tables to simplify the data warehouse load procedure. To ensure that data are inserted and updated correctly in the destination tables (i.e. data warehouse tables), we need to have a framework to automatically reconcile some basic stats between what we expect to produce based on the content in the time-varying tables in the curated layer and what actually produced in the final data warehouse tables. The reconciliation will run repeatedly for each period and notify users if discover any inconsistency.</p><p /><style type='text/css'>/*<![CDATA[*/
+div.rbtoc1639539804959 {padding: 0px;}
+div.rbtoc1639539804959 ul {list-style: disc;margin-left: 0px;}
+div.rbtoc1639539804959 li {margin-left: 0px;padding-left: 0px;}
+
+/*]]>*/</style><div class='toc-macro rbtoc1639539804959'>
+<ul class='toc-indentation'>
+<li><span class='TOCOutline'>1</span> <a href='#DataWarehouseReconciliationFramework-Introduction'>Introduction</a></li>
+<li><span class='TOCOutline'>2</span> <a href='#DataWarehouseReconciliationFramework-MetricstoReconcile'>Metrics to Reconcile</a></li>
+<li><span class='TOCOutline'>3</span> <a href='#DataWarehouseReconciliationFramework-ReconciliationFrameworkDesignOptions'>Reconciliation Framework Design Options</a></li>
+<li><span class='TOCOutline'>4</span> <a href='#DataWarehouseReconciliationFramework-Decision'>Decision</a></li>
+<li><span class='TOCOutline'>5</span> <a href='#DataWarehouseReconciliationFramework-SendEmailfromADFUsingLogicApps'>Send Email from ADF Using Logic Apps</a></li>
+<li><span class='TOCOutline'>6</span> <a href='#DataWarehouseReconciliationFramework-StoredProcedureStructure'>Stored Procedure Structure</a></li>
+</ul>
+</div><h1 id="DataWarehouseReconciliationFramework-MetricstoReconcile">Metrics to Reconcile</h1><p>The <strong>reconciliation</strong> happens between the <strong>time-varying tables</strong> at the curated layer and the <strong>star schema tables</strong> in the data warehouse, the very first beginning and the last step of the data warehouse pipeline. The following table list metrics that will be used for comparison:</p><div class="table-wrap"><table data-layout="default" class="confluenceTable"><colgroup><col style="width: 177.0px;"/><col style="width: 275.0px;"/><col style="width: 308.0px;"/></colgroup><tbody><tr><th class="confluenceTh"><p><strong>Target</strong></p></th><th class="confluenceTh"><p><strong>Metrics</strong></p></th><th class="confluenceTh"><p><strong>Purpose</strong></p></th></tr><tr><td class="confluenceTd"><p>All star schema tables</p></td><td class="confluenceTd"><p>Number of row inserted</p></td><td class="confluenceTd"><p>Ensure the expected number of insertion is performed successfully</p></td></tr><tr><td class="confluenceTd"><p>All star schema tables</p></td><td class="confluenceTd"><p>Number of row updated</p></td><td class="confluenceTd"><p>Ensure the expected number of updates is performed successfully</p></td></tr><tr><td class="confluenceTd"><p>All star schema tables</p></td><td class="confluenceTd"><p>Total number of rows</p></td><td class="confluenceTd"><p>filter by active records.  </p></td></tr><tr><td class="confluenceTd"><p>Fact tables</p></td><td class="confluenceTd"><p>Sum of values of applicable field(s)</p></td><td class="confluenceTd"><p>Ensure the calculation is performed correctly</p></td></tr></tbody></table></div><h1 id="DataWarehouseReconciliationFramework-ReconciliationFrameworkDesignOptions">Reconciliation Framework Design Options</h1><p>The options are base on the outcome from <a href="Data-Warehouse-Pipeline---3.-Process_469860353.html" data-linked-resource-id="469860353" data-linked-resource-version="42" data-linked-resource-type="page">Data Warehouse Pipeline - 3. Process</a>.</p><div class="table-wrap"><table data-layout="default" class="confluenceTable"><colgroup><col style="width: 69.0px;"/><col style="width: 226.0px;"/><col style="width: 245.0px;"/><col style="width: 220.0px;"/></colgroup><tbody><tr><th class="confluenceTh"><p /></th><th class="confluenceTh"><p><strong>Option 1: Reconciliation as a pipeline executed after the star schema pipeline </strong> </p></th><th class="confluenceTh"><p><strong>Option 2: Embed reconciliation in data warehouse load and only perform loading if reconcile </strong><span class="status-macro aui-lozenge aui-lozenge-success">DECIDED</span>  </p></th><th class="confluenceTh"><p><strong>Option 3: ADF triggers a dashboard refresh and visualise on a pre-created metrics view</strong></p></th></tr><tr><td class="confluenceTd"><p>Description</p></td><td class="confluenceTd"><p>Extend the existing <a href="Data-Warehouse-Pipeline---3.-Process_469860353.html" data-linked-resource-id="469860353" data-linked-resource-version="42" data-linked-resource-type="page">data warehouse hyper pipeline design</a> to have one more sub-pipeline for reconciliation. Once all the star schema tables have been successfully loaded, run the reconciliation pipeline. The pipeline will <span class="inline-comment-marker" data-ref="058ee7dc-ffb4-441d-bee6-39c9dd1fc092">contain </span><strong><span class="inline-comment-marker" data-ref="058ee7dc-ffb4-441d-bee6-39c9dd1fc092">bespoke stored procedure(s) </span></strong><span class="inline-comment-marker" data-ref="058ee7dc-ffb4-441d-bee6-39c9dd1fc092">to calculate different metrics. The calculation Metrics value of both expected and actual can be persisted into a table in Snowflake to track historical trend and future analysis. Utilise the existing method (</span><a href="https://www.mssqltips.com/sqlservertip/5718/azure-data-factory-pipeline-email-notification--part-1/" class="external-link" rel="nofollow"><span class="inline-comment-marker" data-ref="058ee7dc-ffb4-441d-bee6-39c9dd1fc092">ADF, logic apps, and Web Activity</span></a><span class="inline-comment-marker" data-ref="058ee7dc-ffb4-441d-bee6-39c9dd1fc092">) to </span><strong><span class="inline-comment-marker" data-ref="058ee7dc-ffb4-441d-bee6-39c9dd1fc092">send out notification emails</span></strong><span class="inline-comment-marker" data-ref="058ee7dc-ffb4-441d-bee6-39c9dd1fc092">.</span> <strong><span style="color: rgb(255,86,48);">Note</span></strong>: when calculating the expected metric values, only need to use a driving table. The implementation of the logic usually can be simpler and need to be different from the implementation of the loading.</p><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio2285520807949371143">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio2285520807949371143"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio2285520807949371143",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=575045842&diagramName=Recon_design1.svg&revision=9&width=1071&height=484&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=575045842&displayName=Recon_design1.svg&contentId=&custContentId=577404958&contentVer=9&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio2285520807949371143&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1162.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"macro\":{\"outputType\":\"html_export\",\"hash\":\"9c7989cd-0df6-4cf8-bb56-14a3376b8d29\",\"id\":\"9c7989cd-0df6-4cf8-bb56-14a3376b8d29\"},\"content\":{\"type\":\"page\",\"version\":\"20\",\"id\":\"575045842\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"575045842\",\"macro.hash\":\"9c7989cd-0df6-4cf8-bb56-14a3376b8d29\",\"page.type\":\"page\",\"macro.localId\":\"8370f2f4-ca6b-4a98-88ca-dc5e78ba3c23\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=575045842|custContentId=577404958|lbox=1|diagramDisplayName=Recon_design1.svg|contentVer=9|revision=9|baseUrl=https://vmia.atlassian.net/wiki|diagramName=Recon_design1.svg|pCenter=0|width=1071|links=|tbstyle=|height=484\",\"space.id\":\"262145\",\"diagramDisplayName\":\"Recon_design1.svg\",\"diagramName\":\"Recon_design1.svg\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"484\",\"space.key\":\"SDI\",\"user.id\":\"60c80092624d700069d68fe9\",\"content.version\":\"20\",\"page.title\":\"Data Warehouse Reconciliation Framework\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"575045842\",\"custContentId\":\"577404958\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"9\",\"page.version\":\"20\",\"revision\":\"9\",\"user.key\":\"8a7f808a79f96b90017a0d42d78807c4\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"575045842\",\"width\":\"1071\",\"macro.id\":\"9c7989cd-0df6-4cf8-bb56-14a3376b8d29\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+</td><td class="confluenceTd"><p>Extend on the stored procedures within a <strong>ForEach loop</strong> in the existing <a href="Data-Warehouse-Pipeline---3.-Process_469860353.html" data-linked-resource-id="469860353" data-linked-resource-version="42" data-linked-resource-type="page">data warehouse hyper pipeline design</a>, and add <strong>new bespoke stored procedure</strong> (calculate <strong>expected values from time-varying tables</strong>, based on a driving table) and <strong>enhance the existing bespoke stored procedure</strong> (calculate <strong>expected values from loading logic</strong>). If <strong>a table fails to reconcile</strong>, the master will <strong>skip its loading process</strong> rather than stop loading for all tables. The results can be written to a metric table to track trends and support future analysis. Only when two expected values are consistent, execute the loading logic and ingest data into the data warehouse table. The reconciliation happens to both the data vault and star schema pipeline. Once the loop finishes, Utilise the existing method (<a href="https://www.mssqltips.com/sqlservertip/5718/azure-data-factory-pipeline-email-notification--part-1/" class="external-link" rel="nofollow">ADF, logic apps, and Web Activity</a>) to <strong>send out notification emails</strong>.</p><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio7694715179941597971">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio7694715179941597971"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio7694715179941597971",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=575045842&diagramName=Recon_design2.svg&revision=8&width=1441&height=566.03125&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=575045842&displayName=Recon_design2.svg&contentId=&custContentId=564495554&contentVer=8&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio7694715179941597971&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1162.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"macro\":{\"outputType\":\"html_export\",\"hash\":\"7e74e178-0d1c-49a0-ba54-2b0fad641e68\",\"id\":\"7e74e178-0d1c-49a0-ba54-2b0fad641e68\"},\"content\":{\"type\":\"page\",\"version\":\"20\",\"id\":\"575045842\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"575045842\",\"macro.hash\":\"7e74e178-0d1c-49a0-ba54-2b0fad641e68\",\"page.type\":\"page\",\"macro.localId\":\"49591f28-a768-44e8-8f66-799a31b324a1\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=575045842|custContentId=564495554|lbox=1|diagramDisplayName=Recon_design2.svg|contentVer=8|revision=8|baseUrl=https://vmia.atlassian.net/wiki|diagramName=Recon_design2.svg|pCenter=0|width=1441|links=|tbstyle=|height=566.03125\",\"space.id\":\"262145\",\"diagramDisplayName\":\"Recon_design2.svg\",\"diagramName\":\"Recon_design2.svg\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"566.03125\",\"space.key\":\"SDI\",\"user.id\":\"60c80092624d700069d68fe9\",\"content.version\":\"20\",\"page.title\":\"Data Warehouse Reconciliation Framework\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"575045842\",\"custContentId\":\"564495554\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"8\",\"page.version\":\"20\",\"revision\":\"8\",\"user.key\":\"8a7f808a79f96b90017a0d42d78807c4\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"575045842\",\"width\":\"1441\",\"macro.id\":\"7e74e178-0d1c-49a0-ba54-2b0fad641e68\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+</td><td class="confluenceTd"><p>Maintain the existing data warehouse hyper pipeline design. To support the reconciliation, produce a <strong>view in Snowflake</strong> with all the metrics with expected values from time-varying tables and actual values from star schema tables. Create a <strong>dashboard </strong>to consume and visualise the metrics. Add a <strong>Web Activity or Copy Activity in ADF</strong> as the <strong>last step</strong> in the Data Warehouse Hyper Pipeline to <strong>refresh data extract in Tableau or PowerBI API</strong> for visualisation (A plan B is to use <strong>scheduled refresh</strong> on the side of <a href="https://help.tableau.com/current/server/en-us/schedule_add.htm" class="external-link" rel="nofollow">Tableau </a>and <a href="https://docs.microsoft.com/en-us/power-bi/report-server/configure-scheduled-refresh" class="external-link" rel="nofollow">PowerBI</a>). Add a <strong>data-driven alert</strong> on the dashboard to send out an email when a threshold is reached.</p><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio2249810376468340967">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio2249810376468340967"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio2249810376468340967",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=575045842&diagramName=Recon_design3.svg&revision=3&width=956.84375&height=300.171875&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=575045842&displayName=Recon_design3.svg&contentId=&custContentId=577372446&contentVer=3&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio2249810376468340967&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1162.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"macro\":{\"outputType\":\"html_export\",\"hash\":\"b9059264-b60c-4479-a5ca-efba2698f21f\",\"id\":\"b9059264-b60c-4479-a5ca-efba2698f21f\"},\"content\":{\"type\":\"page\",\"version\":\"20\",\"id\":\"575045842\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"575045842\",\"macro.hash\":\"b9059264-b60c-4479-a5ca-efba2698f21f\",\"page.type\":\"page\",\"macro.localId\":\"f5e6e13d-ffa3-44fb-be64-d36eae166e8c\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=575045842|custContentId=577372446|lbox=1|diagramDisplayName=Recon_design3.svg|contentVer=3|revision=3|baseUrl=https://vmia.atlassian.net/wiki|diagramName=Recon_design3.svg|pCenter=0|width=956.84375|links=|tbstyle=|height=300.171875\",\"space.id\":\"262145\",\"diagramDisplayName\":\"Recon_design3.svg\",\"diagramName\":\"Recon_design3.svg\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"300.171875\",\"space.key\":\"SDI\",\"user.id\":\"60c80092624d700069d68fe9\",\"content.version\":\"20\",\"page.title\":\"Data Warehouse Reconciliation Framework\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"575045842\",\"custContentId\":\"577372446\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"3\",\"page.version\":\"20\",\"revision\":\"3\",\"user.key\":\"8a7f808a79f96b90017a0d42d78807c4\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"575045842\",\"width\":\"956.84375\",\"macro.id\":\"b9059264-b60c-4479-a5ca-efba2698f21f\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+</td></tr><tr><td class="confluenceTd"><p>Advantages</p></td><td class="confluenceTd"><ul><li><p>Only a new pipeline gets added after loading data to the star schema. The data vault and star schema pipeline are untouched.</p></li><li><p>The solution is relatively simple and predictable.</p></li><li><p>Can control how to send the notification: each problem triggers an email or one email that contains all the problems using a stored procedure.</p></li><li><p>Historical metric values are persistent in a metric table.</p></li><li><p>As the reconciliation is part of the data warehouse hyper pipeline, reconciliation failure will cause the hyper pipeline failure and therefore, no future loading will happen until the reconciliation succeeds.</p></li></ul></td><td class="confluenceTd"><ul><li><p>If inconsistency is discovered, no rollback is needed as data warehouse tables haven’t been updated yet.</p></li><li><p>Historical metric values are persistent in a metric table.</p></li><li><p>As reconciliation failure will fail the data warehouse pipelines, no future loading will happen until the reconciliation succeeds.</p></li></ul></td><td class="confluenceTd"><ul><li><p>Leverage functionality in ADF (to trigger a dashboard refresh: <a href="https://www.clearpeaks.com/beyond-standard-etl-with-azure-data-factory-creating-automated-and-pay-per-use-etl-pipelines-with-rest-api-triggering/" class="external-link" rel="nofollow">Tableau</a>, <a href="https://www.moderndata.ai/2019/05/powerbi-dataset-refresh-using-adf/" class="external-link" rel="nofollow">PowerBI</a>) and dashboard (data-driven alert: <a href="https://help.tableau.com/current/pro/desktop/en-us/data_alerts.htm" class="external-link" rel="nofollow">Tableau</a>, <a href="https://docs.microsoft.com/en-us/power-bi/consumer/end-user-alerts" class="external-link" rel="nofollow">PowerBI</a>) for reconciliation with visualisation.</p></li><li><p>The solution is relatively light weight (no stored procedures) and provides visualisation on reconciliation.</p></li><li><p>Can control how to send the notification: each problem triggers an email or one email that contains all the problems.</p></li><li><p>Historical metric values are persistent in a metric view.</p></li></ul></td></tr><tr><td class="confluenceTd"><p>Disadvantages</p></td><td class="confluenceTd"><ul><li><p>If inconsistency is discovered, rollback is required as incorrect data due to error in data has been populated into the data warehouse tables.</p></li><li><p>To reduce the amount of rollback and reload which is quite labour intensive, testing of stored procedure needs to be done thoroughly.</p></li><li><p><span class="inline-comment-marker" data-ref="bc070799-5b73-42d6-abe7-543cf7c8bf6d">Data manipulation logic exists in two places, i.e. snowflake stored procedures that perform data load and reconciliation. </span></p></li></ul></td><td class="confluenceTd"><ul><li><p>Increase the complexity of the data vault and star schema pipeline, particular the stored procedures.</p></li><li><p><span class="inline-comment-marker" data-ref="530eb1a3-e7a9-46a4-9f15-717352d2308d">Data manipulation logic exists in two places, i.e. snowflake stored procedures that perform data load and reconciliation.  </span></p></li></ul></td><td class="confluenceTd"><ul><li><p>If inconsistency is discovered, rollback is required as incorrect data due to error in stored procedures have been introduced into the data warehouse tables.</p></li><li><p>To reduce the amount of rollback and reload which is quite effortful, testing of stored procedure needs to be done thoroughly.</p></li><li><p>Only a subset of visualisation supports data-driven email alert (<a href="https://help.tableau.com/current/pro/desktop/en-us/data_alerts.htm" class="external-link" rel="nofollow">Tableau</a>, <a href="https://docs.microsoft.com/en-us/power-bi/consumer/end-user-alerts" class="external-link" rel="nofollow">PowerBI</a>).</p></li><li><p> The view that the dashboard consumes will need manual update if a new data feed is added or any logic is changed.</p></li><li><p>Data manipulation logic exists in two places, i.e. snowflake stored procedure, view creation.</p></li><li><p>Will need a POC to confirm the integration with ADF and Tableau or PowerBI.</p></li><li><p>As the reconciliation is independent to the data warehouse pipelines, reconciliation failure has no impact on the data warehouse load and therefore, won’t stop any future load.</p></li></ul></td></tr></tbody></table></div><p /><h1 id="DataWarehouseReconciliationFramework-Decision">Decision</h1><p>The decision is made based on four principles:</p><div class="table-wrap"><table data-layout="default" class="confluenceTable"><colgroup><col style="width: 190.0px;"/><col style="width: 190.0px;"/><col style="width: 190.0px;"/><col style="width: 190.0px;"/></colgroup><tbody><tr><th class="confluenceTh"><p><strong>Principles</strong></p></th><th class="confluenceTh"><p><strong>Reconciliation as a pipeline executed after the star schema pipeline </strong> </p></th><th class="confluenceTh"><p><strong>Embed reconciliation in data warehouse load and only perform loading if reconcile </strong><span class="status-macro aui-lozenge aui-lozenge-success">DECIDED</span>  </p></th><th class="confluenceTh"><p><strong>ADF triggers a dashboard refresh and visualise on a pre-created metrics view</strong></p></th></tr><tr><td class="confluenceTd"><p>Simple solution is better solution.</p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/></p><p>Build a new pipeline for reconciliation using known functionalities in ADF and Snowflake.</p></td><td class="confluenceTd"><p><img class="emoticon emoticon-cross" data-emoji-id="atlassian-cross_mark" data-emoji-shortname=":cross_mark:" data-emoji-fallback=":cross_mark:" src="images/icons/emoticons/error.png" width="16" height="16" data-emoticon-name="cross" alt="(error)"/></p><p>Create new stored procedure to calculated expectation from time-varying tables, and enhance existing stored procedure to calculate expectation from loading logic for both data vault and star schema pipeline. The complexity comes from the reconciliation in both data vault and star schema to avoid rollback for incorrection values.</p></td><td class="confluenceTd"><p><img class="emoticon emoticon-cross" data-emoji-id="atlassian-cross_mark" data-emoji-shortname=":cross_mark:" data-emoji-fallback=":cross_mark:" src="images/icons/emoticons/error.png" width="16" height="16" data-emoticon-name="cross" alt="(error)"/></p><p>Build a new view for all the reconciliation metrics and a dashboard to visualise metrics. The complexity comes from the extra work on the visualisation and the integration between ADF and the dashboard.</p></td></tr><tr><td class="confluenceTd"><p>Minimise the introduction of new services unless necessary.</p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/></p><p>No new service needed.</p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/></p><p>No new service needed.</p></td><td class="confluenceTd"><p><img class="emoticon emoticon-cross" data-emoji-id="atlassian-cross_mark" data-emoji-shortname=":cross_mark:" data-emoji-fallback=":cross_mark:" src="images/icons/emoticons/error.png" width="16" height="16" data-emoticon-name="cross" alt="(error)"/></p><p>Introduce dashboard (Tableau or PowerBI) and associated integration with ADF. </p></td></tr><tr><td class="confluenceTd"><p>It has to be easy to use for on-going maintenance and operation.</p></td><td class="confluenceTd"><p><img class="emoticon emoticon-cross" data-emoji-id="atlassian-cross_mark" data-emoji-shortname=":cross_mark:" data-emoji-fallback=":cross_mark:" src="images/icons/emoticons/error.png" width="16" height="16" data-emoticon-name="cross" alt="(error)"/></p><p>If a transformation logic changes, more than one places in the reconciliation solution need to be updated.</p></td><td class="confluenceTd"><p><img class="emoticon emoticon-cross" data-emoji-id="atlassian-cross_mark" data-emoji-shortname=":cross_mark:" data-emoji-fallback=":cross_mark:" src="images/icons/emoticons/error.png" width="16" height="16" data-emoticon-name="cross" alt="(error)"/></p><p>If a transformation logic changes, more than one places in the reconciliation solution need to be updated.</p></td><td class="confluenceTd"><p><img class="emoticon emoticon-cross" data-emoji-id="atlassian-cross_mark" data-emoji-shortname=":cross_mark:" data-emoji-fallback=":cross_mark:" src="images/icons/emoticons/error.png" width="16" height="16" data-emoticon-name="cross" alt="(error)"/></p><p>If a transformation logic changes, more than one places in the reconciliation solution need to be updated.</p></td></tr><tr><td class="confluenceTd"><p>Whether require rollback and reload if reconciliation fails</p></td><td class="confluenceTd"><p><img class="emoticon emoticon-cross" data-emoji-id="atlassian-cross_mark" data-emoji-shortname=":cross_mark:" data-emoji-fallback=":cross_mark:" src="images/icons/emoticons/error.png" width="16" height="16" data-emoticon-name="cross" alt="(error)"/></p><p>Will require rollback and reload if reconciliation fails.</p><p>Reconciliation failure can stop future data warehouse loading and therefore reduce the amount of rollback.</p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/></p><p>No rollback and reload needed as data won’t be loaded due to reconciliation failure.</p><p>Reconciliation failure can stop future data warehouse loading and therefore avoid the amount of rollback.</p></td><td class="confluenceTd"><p><img class="emoticon emoticon-cross" data-emoji-id="atlassian-cross_mark" data-emoji-shortname=":cross_mark:" data-emoji-fallback=":cross_mark:" src="images/icons/emoticons/error.png" width="16" height="16" data-emoticon-name="cross" alt="(error)"/></p><p>Will require rollback and reload if reconciliation fails.</p><p>Reconciliation failure doesn’t stop future data warehouse loading and therefore more rollback if the reconciliation didn’t resolve early enough.</p></td></tr></tbody></table></div><p>In the 2nd Feb. 2021 meeting with <a class="confluence-userlink user-mention" data-username="5eec340a41f7000abb28f815" data-account-id="5eec340a41f7000abb28f815" href="https://vmia.atlassian.net/wiki/people/5eec340a41f7000abb28f815?ref=confluence" target="_blank" data-base-url="https://vmia.atlassian.net/wiki">Bo Kwon (Deactivated)</a>, <a class="confluence-userlink user-mention" data-username="5ecf250a4824b20c182c6999" data-account-id="5ecf250a4824b20c182c6999" href="https://vmia.atlassian.net/wiki/people/5ecf250a4824b20c182c6999?ref=confluence" target="_blank" data-linked-resource-id="6979597" data-linked-resource-version="1" data-linked-resource-type="userinfo" data-base-url="https://vmia.atlassian.net/wiki">h.lindsaysmith@vmia.vic.gov.au Lindsay-Smith</a>  and <a class="confluence-userlink user-mention" data-username="5dc205aeb6e6b50c58aeca8b" data-account-id="5dc205aeb6e6b50c58aeca8b" href="https://vmia.atlassian.net/wiki/people/5dc205aeb6e6b50c58aeca8b?ref=confluence" target="_blank" data-base-url="https://vmia.atlassian.net/wiki">Sarah Fan (Deactivated)</a>, the option 2 is chosen. The primary reason is because this option doesn’t require rollback and reload if reconciliation fails. We foresee reconciliation failure could happen quite often during the early stage of the pipeline implementation due to the large number of bespoke stored procedure to implement for data warehouse loading, and the on-going changes from PEGA. Rollback and reload are manual and effortful. By investing more initial effort to implement the option 2 could bring in more time saving when reconciliation fails. </p><p>In the 8th Feb. 2021 meeting with <a class="confluence-userlink user-mention" data-username="5f97265e44658b00710f438d" data-account-id="5f97265e44658b00710f438d" href="https://vmia.atlassian.net/wiki/people/5f97265e44658b00710f438d?ref=confluence" target="_blank" data-base-url="https://vmia.atlassian.net/wiki">Rahul Pandey (Deactivated)</a>, he has agreed on the choice of the option 2 as long as only the problematic table gets stopped and rest of tables that are successfully reconciled will perform the loading. </p><p /><h1 id="DataWarehouseReconciliationFramework-SendEmailfromADFUsingLogicApps">Send Email from ADF Using Logic Apps</h1><p>Sending an email from ADF requires a <strong>Logic App</strong> to be created and a <strong>Webhook Activity</strong> to make a POST call to the URL of the Logic App, The Logic App consists of a HTTP trigger and an Outlook 365 send email action.</p><p><strong>Step 0</strong>: A stored procedure (named <strong>SP_SF_TEST</strong>) to <strong>output </strong>the error message and technical metadata (<strong><span style="color: rgb(255,86,48);">Note</span></strong>: make sure the keys that are used in the dynamic email is at the top level of the JSON object as in the example. Otherwise, they will return Null in the email.). The Lookup Activity can return an example in the following screenshot:</p><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/575045842/587005986.png" data-image-src="attachments/575045842/587005986.png" data-height="485" data-width="1319" data-unresolved-comment-count="0" data-linked-resource-id="587005986" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20210122-035751.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="575045842" data-linked-resource-container-version="20" data-media-id="39c38596-4b17-41df-bfaf-81368ad96ab4" data-media-type="file"></span><p><strong>Step 1</strong>: create a Logic App</p><ul><li><p>HTTP Trigger</p><ul><li><p>After save the app, need to grab the <strong>URL </strong>which will be used in the <strong>Webhook Activity</strong>.</p></li><li><p>The <strong>JSON Schema</strong> needs to reflect the exact structure of the JSON in the <strong>Webhook Activity</strong>.</p><ul><li><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence"># The JSON Schema used in the example
+{
+        &quot;DataFactoryName&quot;: {
+            &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;EmailTo&quot;: {
+            &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;ErrorMessage&quot;: {
+            &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;PipelineName&quot;: {
+            &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;Subject&quot;: {
+            &quot;type&quot;: &quot;string&quot;
+        }
+}</pre>
+</div></div></li></ul></li></ul></li></ul><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/575045842/587169855.png" data-image-src="attachments/575045842/587169855.png" data-height="635" data-width="761" data-unresolved-comment-count="0" data-linked-resource-id="587169855" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20210122-035936.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="575045842" data-linked-resource-container-version="20" data-media-id="1ba3a278-36fc-4489-9568-be960f48b15c" data-media-type="file"></span><ul><li><p>Send email action using Office Outlook 365</p><ul><li><p>When specify <strong>Body, Subject and To fields</strong>, the GUI will automatically bring up <strong>dynamic content fields</strong> that can be used. You will find that the keys in the JSON object passed over from the Webhook Activity appear in the list. Select them to draft the email.</p></li></ul></li></ul><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/575045842/594837547.png" data-image-src="attachments/575045842/594837547.png" data-height="427" data-width="610" data-unresolved-comment-count="0" data-linked-resource-id="594837547" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20210125-005809.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="575045842" data-linked-resource-container-version="20" data-media-id="0a7d5462-c01d-4ab1-af6e-cdd28afe4c5a" data-media-type="file"></span><ul><li><p><a href="https://docs.microsoft.com/en-us/azure/data-factory/control-flow-webhook-activity#:~:text=A%20webhook%20activity%20can%20control,proceeds%20to%20the%20next%20activity" class="external-link" rel="nofollow">Make a callback to the Webhook activity</a></p><ul><li><p>This is to return the execution status to ADF</p></li><li><p>Use <strong>HTTP action</strong> with <strong>POST </strong>method and the <strong>callBackUri</strong> in the output of the HTTP trigger. The <strong>callBackUri</strong> is dynamic for each HTTP trigger.</p></li><li><p>The <strong>Header</strong> has to be as shown in the example.</p></li><li><p>The <strong>Body </strong>has to follow the structure shown in the example.</p><ul><li><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence"># Define URI using expression
+triggerBody()[&#39;callBackUri&#39;]</pre>
+</div></div></li></ul></li></ul></li></ul><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/575045842/595198039.png" data-image-src="attachments/575045842/595198039.png" data-height="538" data-width="613" data-unresolved-comment-count="0" data-linked-resource-id="595198039" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20210125-020009.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="575045842" data-linked-resource-container-version="20" data-media-id="bfe548fc-bda3-43f8-940d-6224e32f37b5" data-media-type="file"></span><p><strong>Step 2</strong>: define the Webhook Activity</p><ul><li><p><strong>Webhook vs. Web</strong> Activity</p><ul><li><p>The difference between a Webhook Activity and a Web Activity is that the <strong>Webhook Activity </strong>is a <strong>synchronous </strong>service that ADF will receive the execution status of the logic app, while the <strong>Web Activity</strong> is an <strong>asynchronous </strong>service that ADF only cares about whether it successfully triggers the logic app and doesn’t care about the execution outcome.</p></li></ul></li><li><p>The <strong>URI </strong>is the logic app url.</p></li><li><p>The <strong>Header </strong>is required by the logic app and has to be the value shown.</p></li><li><p>The <strong>Body </strong>can be either a string (as in the example), or a JSON object.</p><ul><li><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence"># a string. Executing the string return a JSON object
+@json(activity(&#39;run_snowflake_sp&#39;).output.firstRow.SP_SF_TEST)
+
+# a JSON object
+{
+        &quot;DataFactoryName&quot;: &quot;ADF_test&quot;,
+        &quot;EmailTo&quot;: &quot;sfan1@kpmg.com.au&quot;,
+        &quot;ErrorMessage&quot;: &quot;error_message&quot;,
+        &quot;PipelineName&quot;: &quot;pipeline_1&quot;,
+        &quot;Subject&quot;: &quot;something went wrong&quot;
+}</pre>
+</div></div></li></ul></li><li><p>An appropriate <strong>Timeout </strong>is required so ADF doesn’t have to wait for too long for the execution status from the logic app, or too short before the callback request being sent and executed.</p></li></ul><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/575045842/594837553.png" data-image-src="attachments/575045842/594837553.png" data-height="580" data-width="605" data-unresolved-comment-count="0" data-linked-resource-id="594837553" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20210125-020718.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="575045842" data-linked-resource-container-version="20" data-media-id="94b53062-e547-43a7-85b9-d0aeb15daa7f" data-media-type="file"></span><p>Then the email is successfully sent out, in <strong>ADF log</strong> (Azure Monitor):</p><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/575045842/594837563.png" data-image-src="attachments/575045842/594837563.png" data-height="212" data-width="1125" data-unresolved-comment-count="0" data-linked-resource-id="594837563" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20210125-021043.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="575045842" data-linked-resource-container-version="20" data-media-id="72b5e89e-c371-48f5-9157-d63d7362f3de" data-media-type="file"></span><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/575045842/594509930.png" data-image-src="attachments/575045842/594509930.png" data-height="478" data-width="1288" data-unresolved-comment-count="0" data-linked-resource-id="594509930" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20210125-021002.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="575045842" data-linked-resource-container-version="20" data-media-id="561c3649-161b-4c40-8fe4-6fcccfac4b8e" data-media-type="file"></span><p>In the <strong>Logic App log</strong>,</p><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/575045842/595001461.png" data-image-src="attachments/575045842/595001461.png" data-height="302" data-width="1495" data-unresolved-comment-count="0" data-linked-resource-id="595001461" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20210125-021214.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="575045842" data-linked-resource-container-version="20" data-media-id="444a9a8b-f234-4eb9-af5e-16a15fe71e98" data-media-type="file"></span><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/575045842/594575457.png" data-image-src="attachments/575045842/594575457.png" data-height="342" data-width="1262" data-unresolved-comment-count="0" data-linked-resource-id="594575457" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20210125-021238.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="575045842" data-linked-resource-container-version="20" data-media-id="a4684c85-847b-4704-9a41-c8ec6c9e2177" data-media-type="file"></span><h1 id="DataWarehouseReconciliationFramework-StoredProcedureStructure">Stored Procedure Structure</h1><p>Snowflake supports a stored procedure calling another store procedure and consume the latter’s output. <span class="inline-comment-marker" data-ref="ca765e99-77fe-4979-8ba5-74fe0a198634">This would serve the option 1 and 2 for a master stored procedure (i.e. trigger the metric calculation and evaluate the expected and actual values) to call one or more slave stored procedure (i.e. calculate the expected and the actual values of metrics).</span> A generic code structure is as below:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">use database sf_test;
+CREATE OR REPLACE PROCEDURE get_columns(TABLE_NAME VARCHAR)
+  RETURNS ARRAY
+  LANGUAGE JAVASCRIPT
+  AS
+  $$
+  var stmt = snowflake.createStatement({
+      sqlText: &quot;SELECT * FROM &quot; + TABLE_NAME + &quot; LIMIT 1;&quot;,    
+  });
+  stmt.execute();
+
+  var cols=[];
+  for (i = 1; i &lt;= stmt.getColumnCount(); i++) {
+    cols.push(stmt.getColumnName(i));
+  }
+  return cols
+  $$;
+
+
+CREATE OR REPLACE PROCEDURE get_data()   //procedure call the above procedure
+  RETURNS ARRAY
+  LANGUAGE JAVASCRIPT
+  AS
+  $$
+  var r = snowflake.execute({sqlText: &quot;call get_columns(&#39;sf_test.test2&#39;)&quot;});
+  r.next(); // use next() to iterate over the resultset to retrieve technical metadata
+  return r.getColumnValue(1);
+  $$;
+    
+call get_data();</pre>
+</div></div>
+                    </div>
+
+                                        <div class="pageSection group">
+                        <div class="pageSectionHeader">
+                            <h2 id="attachments" class="pageSectionTitle">Attachments:</h2>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577372179.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design_1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577536003.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design_1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/574947680.svg">Recon_design_1.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577470475.png">Recon_design_1.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577536055.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/564495494.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/574849449.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577470513.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/564495503.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577601579.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/574849458.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577503298.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577503307.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577372208.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/567149302.svg">Recon_design1.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577536144.png">Recon_design1.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577404984.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/567149202.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577470555.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577404993.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577503325.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577470564.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577405002.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577503334.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577470573.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577175613.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577372313.svg">Recon_design2.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577175636.png">Recon_design2.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/567149254.svg">Recon_design2.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/567149264.png">Recon_design2.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577503453.svg">Recon_design2.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/567149390.png">Recon_design2.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577470830.svg">Recon_design1.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577470840.png">Recon_design1.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577634508.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577470667.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/567149323.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577405102.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/574849574.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577372428.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577601740.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577405111.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577372437.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577634503.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577634542.svg">Recon_design3.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/574849600.png">Recon_design3.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/564495685.tmp">~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577175756.tmp">~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577601753.tmp">~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577601762.tmp">~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/574849591.tmp">~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/567149372.tmp">~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577634562.svg">Recon_design3.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577503440.png">Recon_design3.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577503422.tmp">~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577536173.tmp">~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577634552.tmp">~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/567149342.tmp">~Recon_design3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/567149332.svg">Recon_design3.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/567149337.png">Recon_design3.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577405440.svg">Recon_design2.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577536597.png">Recon_design2.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577503589.svg">Recon_design1.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/564495856.png">Recon_design1.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577602056.svg">Recon_design1.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577503720.png">Recon_design1.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/594509971.svg">Recon_design2.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/595198095.png">Recon_design2.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/595099764.svg">Recon_design1.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/595001498.png">Recon_design1.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/587268122.png">image-20210122-035623.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/587137053.png">image-20210122-035646.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/587005986.png">image-20210122-035751.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/587169855.png">image-20210122-035936.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/595198005.png">image-20210124-235636.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/595198019.png">image-20210125-001748.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/594837547.png">image-20210125-005809.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/595198039.png">image-20210125-020009.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/594837553.png">image-20210125-020718.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/594509930.png">image-20210125-021002.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/594837563.png">image-20210125-021043.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/595001461.png">image-20210125-021214.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/594575457.png">image-20210125-021238.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/594837696.svg">Recon_design1.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/594903207.png">Recon_design1.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618397747.svg">Recon_design2.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618397757.png">Recon_design2.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618102805.svg">Recon_design1.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618201104.png">Recon_design1.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618397697.tmp">~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618364941.tmp">~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618365009.tmp">~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618070143.svg">Recon_design1.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618266726.png">Recon_design1.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618168408.svg">Recon_design2.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618496080.png">Recon_design2.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618201192.tmp">~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618332264.tmp">~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618332278.tmp">~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618332288.tmp">~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618365027.tmp">~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618102885.tmp">~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577470626.tmp">~Recon_design1.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577470522.svg">Recon_design1.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577634344.png">Recon_design1.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618397821.tmp">~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618365077.tmp">~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618528817.tmp">~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618201286.tmp">~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618201296.tmp">~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618332316.tmp">~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618201310.tmp">~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618332326.tmp">~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/618463339.tmp">~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577470587.tmp">~Recon_design2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/564495549.svg">Recon_design2.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/575045842/577536078.png">Recon_design2.svg.png</a> (image/png)
+                                <br/>
+                                                    </div>
+                    </div>
+                    
+                                                      
+                </div>             </div> 
+            <div id="footer" role="contentinfo">
+                <section class="footer-body">
+                    <p>Document generated by Confluence on Dec 15, 2021 03:43</p>
+                    <div id="footer-logo"><a href="http://www.atlassian.com/">Atlassian</a></div>
+                </section>
+            </div>
+        </div>     </body>
+</html>

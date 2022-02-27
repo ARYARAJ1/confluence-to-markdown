@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SDI : Data Warehouse Pipeline - 3. Process</title>
+        <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body class="theme-default aui-theme-default">
+        <div id="page">
+            <div id="main" class="aui-page-panel">
+                <div id="main-header">
+                    <div id="breadcrumb-section">
+                        <ol id="breadcrumbs">
+                            <li class="first">
+                                <span><a href="index.html">SDI</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="1205338136.html">Decisions/POCs</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="Data-Warehouse-POC_1070989328.html">Data Warehouse POC</a></span>
+                            </li>
+                                                </ol>
+                    </div>
+                    <h1 id="title-heading" class="pagetitle">
+                                                <span id="title-text">
+                            SDI : Data Warehouse Pipeline - 3. Process
+                        </span>
+                    </h1>
+                </div>
+
+                <div id="content" class="view">
+                    <div class="page-metadata">
+                        
+        
+    
+        
+    
+        
+        
+            Created by <span class='author'> Sarah Fan (Deactivated)</span>, last modified by <span class='editor'> h.lindsaysmith@vmia.vic.gov.au Lindsay-Smith</span> on Mar 31, 2021
+                        </div>
+                    <div id="main-content" class="wiki-content group">
+                    <h1 id="DataWarehousePipeline-3.Process-Introduction">Introduction</h1><p>This documentation records possible process designs for the data warehouse pipeline. Processes generally follow the same pattern as the Data Lake Hyper Pipeline, conceptually organise activities in a meaningful way, and are designed to be simple and generic. Therefore, ForEach loops, parameters and activity outputs are used in the solution to make the pipelines config-driven with runtime dynamic values. Annotation and User Properties are leveraged to provide additional metadata of the pipeline runs and bring transparency when monitoring.</p><p /><style type='text/css'>/*<![CDATA[*/
+div.rbtoc1639539305343 {padding: 0px;}
+div.rbtoc1639539305343 ul {list-style: disc;margin-left: 0px;}
+div.rbtoc1639539305343 li {margin-left: 0px;padding-left: 0px;}
+
+/*]]>*/</style><div class='toc-macro rbtoc1639539305343'>
+<ul class='toc-indentation'>
+<li><span class='TOCOutline'>1</span> <a href='#DataWarehousePipeline-3.Process-Introduction'>Introduction</a></li>
+<li><span class='TOCOutline'>2</span> <a href='#DataWarehousePipeline-3.Process-ProcessDiagram'>Process Diagram</a>
+<ul class='toc-indentation'>
+<li><span class='TOCOutline'>2.1</span> <a href='#DataWarehousePipeline-3.Process-High-levelOverview'>High-level Overview</a>
+<ul class='toc-indentation'>
+<li><span class='TOCOutline'>2.1.1</span> <a href='#DataWarehousePipeline-3.Process-Descriptionoftheprocesses:'>Description of the processes:</a></li>
+</ul>
+</li>
+<li><span class='TOCOutline'>2.2</span> <a href='#DataWarehousePipeline-3.Process-DataWarehouseProcessStructure'>Data Warehouse Process Structure</a></li>
+<li><span class='TOCOutline'>2.3</span> <a href='#DataWarehousePipeline-3.Process-Low-levelProcessDiagram'>Low-level Process Diagram</a>
+<ul class='toc-indentation'>
+<li><span class='TOCOutline'>2.3.1</span> <a href='#DataWarehousePipeline-3.Process-Descriptionoftheprocess:'>Description of the process:</a></li>
+</ul>
+</li>
+<li><span class='TOCOutline'>2.4</span> <a href='#DataWarehousePipeline-3.Process-HandlingVariousScenario'>Handling Various Scenario</a>
+<ul class='toc-indentation'>
+<li><span class='TOCOutline'>2.4.1</span> <a href='#DataWarehousePipeline-3.Process-ADFMonitorandPipelineDebug'>ADF Monitor and Pipeline Debug</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><span class='TOCOutline'>3</span> <a href='#DataWarehousePipeline-3.Process-MeetingtoreviewDesignforpipelinedependenciesinpipelinesorconfigValidationwithVMIA'>Meeting to review Design for pipeline dependencies in pipelines or configValidation with VMIA</a>
+<ul class='toc-indentation'>
+<li><span class='TOCOutline'>3.1</span> <a href='#DataWarehousePipeline-3.Process-Usingconfigtodescribetabledependenciesvs.embeddingthedependenciesinpipelinesequence'>Using config to describe table dependencies vs. embedding the dependencies in pipeline sequence</a></li>
+</ul>
+</li>
+</ul>
+</div><h1 id="DataWarehousePipeline-3.Process-ProcessDiagram">Process Diagram</h1><h2 id="DataWarehousePipeline-3.Process-High-levelOverview">High-level Overview</h2><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio7395275711541834257">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio7395275711541834257"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio7395275711541834257",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=469860353&diagramName=data_warehouse_process.svg&revision=10&width=1311&height=291&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=469860353&displayName=data_warehouse_process.svg&contentId=&custContentId=462881627&contentVer=10&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio7395275711541834257&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1162.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"macro\":{\"outputType\":\"html_export\",\"hash\":\"db8def13-693a-4375-921b-5d0285a5eec4\",\"id\":\"db8def13-693a-4375-921b-5d0285a5eec4\"},\"content\":{\"type\":\"page\",\"version\":\"42\",\"id\":\"469860353\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"469860353\",\"macro.hash\":\"db8def13-693a-4375-921b-5d0285a5eec4\",\"page.type\":\"page\",\"macro.localId\":\"dab22124-6c6d-448a-9ba2-e9b1c1e7c312\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=469860353|custContentId=462881627|lbox=1|diagramDisplayName=data_warehouse_process.svg|contentVer=10|revision=10|baseUrl=https://vmia.atlassian.net/wiki|diagramName=data_warehouse_process.svg|pCenter=0|width=1311|links=|tbstyle=|height=291\",\"space.id\":\"262145\",\"diagramDisplayName\":\"data_warehouse_process.svg\",\"diagramName\":\"data_warehouse_process.svg\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"291\",\"space.key\":\"SDI\",\"user.id\":\"60c80092624d700069d68fe9\",\"content.version\":\"42\",\"page.title\":\"Data Warehouse Pipeline - 3. Process\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"469860353\",\"custContentId\":\"462881627\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"10\",\"page.version\":\"42\",\"revision\":\"10\",\"user.key\":\"8a7f808a79f96b90017a0d42d78807c4\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"469860353\",\"width\":\"1311\",\"macro.id\":\"db8def13-693a-4375-921b-5d0285a5eec4\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<h3 id="DataWarehousePipeline-3.Process-Descriptionoftheprocesses:">Description of the processes:</h3><p>The <strong>Data Lake Hyper Pipeline</strong> consists of components from <strong>DL1 to DL5</strong> (for detailed views, please refer to <a href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/257884214" data-linked-resource-id="257884214" data-linked-resource-version="40" data-linked-resource-type="page">ADF Hyper Pipeline - XML (PEGA)</a>, <a href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/424116229" data-linked-resource-id="424116229" data-linked-resource-version="23" data-linked-resource-type="page">ADF Hyper Pipeline - File Server (Risk Console)</a>, and <a href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/437190686" data-linked-resource-id="437190686" data-linked-resource-version="10" data-linked-resource-type="page">ADF Hyper Pipeline - DB Pull (Client Connect/IDR2)</a>). For the Data Warehouse Hyper Pipeline, two options are proposed. <strong>Option A</strong> is a more complicated version with a<span class="inline-comment-marker" data-ref="d924d492-79e6-4125-b389-d94ccdc35eb3"> Data Vault</span> included in the scope, while <strong>Option B</strong> only contains a star schema consumption layer.  The Data Warehouse Hyper Pipeline will be triggered by a scheduled trigger, rather than by the successful finish of the Data Lake Hyper Pipeline. If the Data Warehouse Hyper Pipeline will wake up every time a curated table is updated (i.e. a data feed is ingested into the data lake), it would create many log items in the ADF monitor but only a small subset of them would have actual execution when dependency conditions are met. For more detail about the Data Warehouse Hyper Pipeline, please refer to <a href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/469860353/Data+Warehouse+Pipeline+-+3.+Process#Low-level-Process-Diagram" rel="nofollow">Low-level Process Diagram</a>. <span class="inline-comment-marker" data-ref="23ad7185-18fe-44ba-bdf9-984f0328fd28">An additional feature in the future that could be implemented would be an external orchestrator function which monitored all data lake pipelines and triggered the data warehouse pipeline as soon as the upstream data lake loads are finished</span></p><h2 id="DataWarehousePipeline-3.Process-DataWarehouseProcessStructure">Data Warehouse Process Structure</h2><div class="table-wrap"><table data-layout="default" class="confluenceTable"><colgroup><col style="width: 67.0px;"/><col style="width: 329.0px;"/><col style="width: 364.0px;"/></colgroup><tbody><tr><th class="confluenceTh"><p /></th><th class="confluenceTh"><p><strong>Use one generic pipeline to run all data warehouse loads in ADF </strong><span class="status-macro aui-lozenge aui-lozenge-success">RECOMMENDED</span> </p></th><th class="confluenceTh"><p><strong><span class="inline-comment-marker" data-ref="085f622b-d361-456c-a52a-d6b9f42baa8c">Use individual pipelines to run different data warehouse loads in ADF</span></strong></p></th></tr><tr><td class="confluenceTd"><p>Description</p></td><td class="confluenceTd"><p>Each data lake pipeline associates with a source system. All the data lake pipelines are upstream of a generic data warehouse pipeline for loading into data warehouse tables. <a href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/469860353/Data+Warehouse+Pipeline+-+3.+Process#ADF-Monitor-and-Pipeline-Debug" rel="nofollow">Using Annotation and User Properties</a> can provide additional metadata to assist monitoring what is running in the data warehouse pipeline</p><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio1537456600513734423">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio1537456600513734423"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio1537456600513734423",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=469860353&diagramName=data_warehouse_orchestration.svg&revision=2&width=1131&height=261&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=440271104&displayName=data_warehouse_orchestration.svg&contentId=&custContentId=441352207&contentVer=2&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio1537456600513734423&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1162.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"macro\":{\"outputType\":\"html_export\",\"hash\":\"dff30028-50a1-4490-8392-a41bf2077f82\",\"id\":\"dff30028-50a1-4490-8392-a41bf2077f82\"},\"content\":{\"type\":\"page\",\"version\":\"42\",\"id\":\"469860353\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"469860353\",\"macro.hash\":\"dff30028-50a1-4490-8392-a41bf2077f82\",\"page.type\":\"page\",\"macro.localId\":\"9eb2ce6a-16fa-4317-b135-735611cbce4b\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=440271104|custContentId=441352207|lbox=1|diagramDisplayName=data_warehouse_orchestration.svg|contentVer=2|revision=2|baseUrl=https://vmia.atlassian.net/wiki|diagramName=data_warehouse_orchestration.svg|pCenter=0|width=1131|links=|tbstyle=|height=261\",\"space.id\":\"262145\",\"diagramDisplayName\":\"data_warehouse_orchestration.svg\",\"diagramName\":\"data_warehouse_orchestration.svg\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"261\",\"space.key\":\"SDI\",\"user.id\":\"60c80092624d700069d68fe9\",\"content.version\":\"42\",\"page.title\":\"Data Warehouse Pipeline - 3. Process\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"440271104\",\"custContentId\":\"441352207\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"2\",\"page.version\":\"42\",\"revision\":\"2\",\"user.key\":\"8a7f808a79f96b90017a0d42d78807c4\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"469860353\",\"width\":\"1131\",\"macro.id\":\"dff30028-50a1-4490-8392-a41bf2077f82\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+</td><td class="confluenceTd"><p>Each data lake pipeline associates with a source system. Because a data warehouse load usually would require more than one table, a data warehouse hyper pipeline can be organised based on loads to a particular domain, e.g. account, policy, claim, etc.</p><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio8209484584412575162">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio8209484584412575162"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio8209484584412575162",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=469860353&diagramName=data_warehouse_orchestration2.svg&revision=2&width=1131&height=261&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=469860353&displayName=data_warehouse_orchestration.svg&contentId=&custContentId=462914272&contentVer=2&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio8209484584412575162&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1162.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"macro\":{\"outputType\":\"html_export\",\"hash\":\"c4be794e-4bb0-4370-bf99-d299a30fad52\",\"id\":\"c4be794e-4bb0-4370-bf99-d299a30fad52\"},\"content\":{\"type\":\"page\",\"version\":\"42\",\"id\":\"469860353\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"469860353\",\"macro.hash\":\"c4be794e-4bb0-4370-bf99-d299a30fad52\",\"page.type\":\"page\",\"macro.localId\":\"6b5b58ca-1e67-4ca9-84a3-3fa577e0e021\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=469860353|custContentId=462914272|lbox=1|diagramDisplayName=data_warehouse_orchestration.svg|contentVer=2|revision=2|baseUrl=https://vmia.atlassian.net/wiki|diagramName=data_warehouse_orchestration2.svg|pCenter=0|width=1131|links=|tbstyle=|height=261\",\"space.id\":\"262145\",\"diagramDisplayName\":\"data_warehouse_orchestration.svg\",\"diagramName\":\"data_warehouse_orchestration2.svg\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"261\",\"space.key\":\"SDI\",\"user.id\":\"60c80092624d700069d68fe9\",\"content.version\":\"42\",\"page.title\":\"Data Warehouse Pipeline - 3. Process\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"469860353\",\"custContentId\":\"462914272\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"2\",\"page.version\":\"42\",\"revision\":\"2\",\"user.key\":\"8a7f808a79f96b90017a0d42d78807c4\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"469860353\",\"width\":\"1131\",\"macro.id\":\"c4be794e-4bb0-4370-bf99-d299a30fad52\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+</td></tr><tr><td class="confluenceTd"><p>Advantages</p></td><td class="confluenceTd"><ul><li><p>Minimum ADF configuration work is required as only one generic Data Warehouse Hyper Pipeline to define.</p></li><li><p>The Data Warehouse Hyper Pipeline will be config-driven.</p></li></ul></td><td class="confluenceTd"><ul><li><p>Allow for variations within each Data Warehouse Hyper Pipeline. </p></li><li><p>The Data Warehouse Hyper Pipeline can support both config-driven and using static values.</p></li></ul></td></tr><tr><td class="confluenceTd"><p>Disadvantages</p></td><td class="confluenceTd"><ul><li><p>Assume a generic pattern for the Data Warehouse Hyper Pipeline.</p></li></ul></td><td class="confluenceTd"><ul><li><p>More ADF configuration work as more Data Warehouse Hyper Pipelines to define.</p></li><li><p>The Data Warehouse Hyper Pipeline will have some hard-coded values.</p></li></ul></td></tr></tbody></table></div><h2 id="DataWarehousePipeline-3.Process-Low-levelProcessDiagram">Low-level Process Diagram</h2><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio4822298707651272471">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio4822298707651272471"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio4822298707651272471",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=469860353&diagramName=Data_warehouse_hyper_pipeline.svg&revision=13&width=2920&height=659&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=469860353&displayName=Data_warehouse_hyper_pipeline.svg&contentId=&custContentId=472613689&contentVer=13&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio4822298707651272471&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1162.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"macro\":{\"outputType\":\"html_export\",\"hash\":\"0c595b31-e8eb-4213-9793-16c4cc8db5ec\",\"id\":\"0c595b31-e8eb-4213-9793-16c4cc8db5ec\"},\"content\":{\"type\":\"page\",\"version\":\"42\",\"id\":\"469860353\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"469860353\",\"macro.hash\":\"0c595b31-e8eb-4213-9793-16c4cc8db5ec\",\"page.type\":\"page\",\"macro.localId\":\"df76c6b1-2263-411c-bfb5-4a46882887a8\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=469860353|custContentId=472613689|lbox=1|diagramDisplayName=Data_warehouse_hyper_pipeline.svg|contentVer=13|revision=13|baseUrl=https://vmia.atlassian.net/wiki|diagramName=Data_warehouse_hyper_pipeline.svg|pCenter=0|width=2920|links=|tbstyle=|height=659\",\"space.id\":\"262145\",\"diagramDisplayName\":\"Data_warehouse_hyper_pipeline.svg\",\"diagramName\":\"Data_warehouse_hyper_pipeline.svg\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"659\",\"space.key\":\"SDI\",\"user.id\":\"60c80092624d700069d68fe9\",\"content.version\":\"42\",\"page.title\":\"Data Warehouse Pipeline - 3. Process\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"469860353\",\"custContentId\":\"472613689\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"13\",\"page.version\":\"42\",\"revision\":\"13\",\"user.key\":\"8a7f808a79f96b90017a0d42d78807c4\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"469860353\",\"width\":\"2920\",\"macro.id\":\"0c595b31-e8eb-4213-9793-16c4cc8db5ec\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<h3 id="DataWarehousePipeline-3.Process-Descriptionoftheprocess:">Description of the process:</h3><ol><li><p>A <strong>schedule trigger</strong> starts the <strong>Data Warehouse Hyper Pipeline</strong> and the <strong>Data Vault Pipeline</strong>. Using the schedule trigger avoids the Checkpoint function needing to wake up the hyper pipeline many times after each curated load finishes, and only a few lead to execution (as no executions can happen until all dependencies are met.. This can make the monitoring more manageable. an extension of this would be to <span class="inline-comment-marker" data-ref="096fe9ca-f00b-4ff2-9d37-9c2b50d1200d">remove the scheduled trigger</span> and track the state of curated loads in an external orchestration component.</p></li><li><p>Start the <strong>Checkpoint function (azure function activity)</strong> to check dependencies.</p><ol><li><p>Retrieve rules on the dependency check.</p></li><li><p>Retrieve the status of the last run of the Data Warehouse Hyper Pipeline and the status of the Data Lake Hyper Pipelines in the current period from the Log Analytics.</p></li><li><p>Set up number of <strong>Retry </strong>and Retry Interval to <span class="inline-comment-marker" data-ref="1280085b-cdd7-4efa-a231-3d30fd0224c7">provide leeway when the Data Lake Hyper Pipeline takes a bit longer to finish</span>.</p></li></ol></li><li><p><strong>Apply the dependency rules</strong> to the pipeline status. There are two types of rules to apply: 1) pipeline dependency on the status of the last run of the Data Warehouse Hyper Pipeline, and 2) table dependency on what curated tables have been updated to load to one or more data vault tables. The table dependency check will inform what data vault tables can be updated.</p><ol><li><p><span class="inline-comment-marker" data-ref="3a31c620-76f2-4fef-8d70-6286fc2d3f4f">Raise an error in the Data Vault Pipeline</span> and hence Data Warehouse Hyper Pipeline when any of the dependency rules isn’t met.</p></li><li><p><span class="inline-comment-marker" data-ref="cd27dd3f-4a40-4ce5-96d1-0c7ee4592f9a">Trigger the next function and pass on a list of finished data feed name. In the first version of this there will be an all or nothing approach.  No progression of the DW pipeline unless all tables are finished, if this proves too likely to stop the DW pipeline, t<span class="inline-comment-marker" data-ref="f082f505-91bc-4a05-924b-85c094eee0f5">hen more granular dependencies can be set</span></span><span class="inline-comment-marker" data-ref="f082f505-91bc-4a05-924b-85c094eee0f5">.</span> <strong><span style="color: rgb(255,86,48);">Note</span></strong>: For easy tracking what data feeds are supposed to run, augment existing data feed config by adding a switch field to indicate if a data feed is switched ON or OFF. When a data feed is switched back on after a period of down time, the data feed can be switched on and processed back-fill manually. This will result in re-processing other data feeds that are ON the whole time. Due to the usage of the <strong>expected batch time field</strong> already loaded tables will be skipped during backfill</p></li></ol></li><li><p>Start the <strong>Read loading job config Lookup activity</strong>. With the data vault table names returned by the Checkpoint function (use the <strong>table_list</strong> in the where clause of the cosmosDB query), retrieve the parameters needed for loading each data vault table using the data vault stored procedure(s) and put them into a list for all data vault tables. <strong><span style="color: rgb(255,86,48);">Note</span></strong>: The checkpoint function output object is a generic output. Table_type is used to further organise the tables if needed as in step 11 to support sequential loading. Since data vault loading isn’t sequential, we only need one item in the output object to spit out the data vault table names.</p><ol><li><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence"># Input list from the checkpoint function:
+[
+    {&quot;table_type&quot;: &quot;data vault&quot;, &quot;table_list&quot;: [&quot;table_1&quot;, &quot;table_2&quot;]}
+]</pre>
+</div></div></li></ol></li><li><p>Pass the list of parameters for loading into each data vault table into the <strong>forEach loop activity</strong>. Each item/iteration is to load one or multiple curated tables into one data vault table. Because there is no dependency between data vault tables, loading can be done <strong>in parallel</strong>. ForEach parallellism will be used to balance between throughput and compute requirements</p><ol><li><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence"># Input list to the loop:
+[
+    {&quot;table_table&quot;: &quot;table_1&quot;, &quot;parameters&quot;: {&quot;sp_name&quot;: &quot;sp_1&quot;.....}},
+    {&quot;table_table&quot;: &quot;table_2&quot;, &quot;parameters&quot;: {&quot;sp_name&quot;: &quot;sp_2&quot;.....}}
+]</pre>
+</div></div></li></ol></li><li><p>Within the loop for each iteration, pass parameters to the <strong>data vault loading stored procedure</strong> to load into one data vault table. </p></li><li><p>The stored procedure is triggered via the <strong>Lookup activity</strong> in ADF. It can be one generic stored procedure with different sections to load hub, satellite, and link table, or a <span class="inline-comment-marker" data-ref="3a3ce8dc-afd7-4d27-b898-da5c072535f5">main stored procedure that call individual stored procedures to load different tables based on the loading pattern and table type.</span> In the <strong>Parameters </strong>field from the config, there is a <strong>sp_name</strong> field, which is used to call a stored procedure, which can be a generic or bespoke stored procedure.</p><ol><li><p>Grab and manipulate data from one or more tables from the curated layer. See more details in <a href="Data-Warehouse-Loading-Pattern-Design_567148575.html" data-linked-resource-id="567148575" data-linked-resource-version="21" data-linked-resource-type="page">Data Warehouse Loading Pattern Design</a> </p></li><li><p>Ingest data into one data vault table. See more details in <a href="Data-Warehouse-Loading-Pattern-Design_567148575.html" data-linked-resource-id="567148575" data-linked-resource-version="21" data-linked-resource-type="page">Data Warehouse Loading Pattern Design</a> </p></li></ol></li><li><p>If the Data Vault Pipeline successfully executes for all tables, trigger the <strong>Star Schema Pipeline</strong>.</p></li><li><p>Start the <strong>Checkpoint function (azure function activity)</strong> to check dependencies.</p><ol><li><p>Retrieve rules on the dependency check.</p></li><li><p>Retrieve the status of the last run of the <span class="inline-comment-marker" data-ref="ef738626-593e-4d56-92d8-e8cf147b2116">Data Warehouse Hyper Pipeline</span> from Log Analytics. This 2nd check is more to ensure when we need to rerun the Star Schema Pipeline manually, all the expected data vault tables are updated for a given period. <strong><span style="color: rgb(255,86,48);">Note</span></strong>: The dependency rules between tables need to entail two type of dependencies: </p><ol><li><p>dependency between data vault/curated tables and star schema tables</p></li><li><p>dependency between dimension, linked and fact tables </p></li></ol></li></ol></li><li><p><strong>Apply the dependency rules</strong> to the pipeline status. There are two types of rules to apply: 1) pipeline dependency on the status of the last run of the Data Warehouse Hyper Pipeline, and 2) table dependency on what data vault tables have been updated to load to one or more star schema tables. <span class="inline-comment-marker" data-ref="77a9a818-f9b9-4a03-ae3a-ef2a1c07cb96">The table dependency check will inform what star schema tables can be updated and their table type.</span></p><ol><li><p>Raise an error in the Star Schema Pipeline and hence Data Warehouse Hyper Pipeline when any of the dependency rules isn’t met.</p></li><li><p>Trigger the next function and pass on a list of finished data vault table names.</p></li></ol></li><li><p>The <strong>first forEach loop activity</strong> will unpack the top level of the list at <strong>table type level</strong> and run in <strong>sequential</strong>: loading into all dimension tables, then bridge tables and lastly the fact tables. Each item contains parameters for loading jobs for one type of table (e.g. dimension). Each item used for iteration will be the star schema table list per table type. Items need to be organised in the following <strong>order in the list</strong>: dimension → bridge → fact.</p><ol><li><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence"># Input list to the 1st loop:
+[
+    {&quot;table_type&quot;: &quot;dimension&quot;, &quot;table_list&quot;: [&quot;table_1&quot;, &quot;table_2&quot;]},
+    {&quot;table_type&quot;: &quot;fact&quot;, &quot;table_list&quot;: [&quot;table_3&quot;, &quot;table_4&quot;]}
+]</pre>
+</div></div></li></ol></li><li><p>Within the first loop, start the <strong>Read loading job config Lookup activity</strong> to retrieve parameters used by a stored procedure for all the star schema tables in the table list of a table type. </p><ol><li><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence"># an illustrative example fo demonstrate how to use concat and join to incorporate a list in the WHERE clause of the cosmosDB query
+@concat(&#39;select * from c where c.table_name in (&quot;&#39;, join(activity(&#39;read_in_config&#39;).output.value[0].table_list,&#39;&quot;,&quot;&#39;),&#39;&quot;)&#39;)</pre>
+</div></div></li></ol></li><li><p>A list of parameters passes over to the second loop. The <strong>second forEach loop</strong> <strong>activity </strong>will unpack the list at <strong>the individual loading job level</strong>. All the jobs can be run <strong>in parallel or in sequence</strong>. Each item contains parameters for one loading job for one table. The <strong>sequence</strong> field is optional if there is any <strong>dependency </strong>between tables within one table type.</p><ol><li><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence"># Input list to the 2nd loop for dimension table type:
+[
+    {&quot;table_table&quot;: &quot;table_1&quot;, &quot;sequence&quot;: 1, parameters&quot;: {&quot;sp_name&quot;: &quot;sp_1&quot;.....}},
+    {&quot;table_table&quot;: &quot;table_2&quot;, &quot;sequence&quot;: 2, &quot;parameters&quot;: {&quot;sp_name&quot;: &quot;sp_2&quot;.....}}
+]</pre>
+</div></div></li></ol></li><li><p>Within the loop for each iteration, pass parameters to the <strong>star schema loading stored procedure</strong> to load into one star schema table. </p></li><li><p>The stored procedure is triggered via the <strong>Lookup activity</strong> in ADF and can call stored procedure dynamically. The stored procedure(s) can be generic to load for one type of tables (e.g. a stored procedure to load all dimension tables), and several specific stored procedure to load different tables (e.g. a stored procedure to load one fact table). This will depend on if there are common loading patterns and procedures for a loading job.</p><ol><li><p>Grab and manipulate data from one or more tables from the data vault.</p></li><li><p>Ingest data into one star schema table.</p></li></ol></li></ol><p><strong><span style="color: rgb(255,86,48);">Note</span></strong>:  </p><ul><li><p>When the Data Warehouse Hyper Pipeline <strong>only contains the Star Schema Pipeline (Option B)</strong>, the process of the hyper pipeline can start from <strong>step 9</strong> where a <strong>scheduled trigger</strong> wakes up the hyper pipeline. The checkpoint function will check the following conditions:</p><ul><li><p>If last run of data warehouse hyper pipeline failed</p></li><li><p>Not all the expected curated tables successfully finished the current round</p></li></ul></li><li><p>All the dependency rules, as they’re all associated with individual data warehouse tables, they should all live in the same config with other data warehouse table information used by the pipeline process (e.g. bespoke stored procedure names, parameter inputs).</p></li></ul><h2 id="DataWarehousePipeline-3.Process-HandlingVariousScenario">Handling Various Scenario </h2><div class="table-wrap"><table data-layout="default" class="confluenceTable"><colgroup><col style="width: 48.0px;"/><col style="width: 236.0px;"/><col style="width: 385.0px;"/><col style="width: 91.0px;"/></colgroup><tbody><tr><th class="confluenceTh"><p><strong>#</strong></p></th><th class="confluenceTh"><p><strong>Scenario Description</strong></p></th><th class="confluenceTh"><p><strong>Treatment</strong></p></th><th class="confluenceTh"><p><strong>Current solution can handle?</strong></p></th></tr><tr><td class="confluenceTd"><p>1</p></td><td class="confluenceTd"><p><strong>Flexibility in handling table dependency rules</strong>: all the curated tables or the data vault tables are ready vs. <span class="inline-comment-marker" data-ref="a767fda1-9a98-4c6b-ba00-52f409a1445a">an expected subset of curated or data vault tables is prepared</span>. The latter one is for the scenario when we know there are one or few data feeds required a significant amount of work to fix and won’t be ingested for a while.</p></td><td class="confluenceTd"><ul><li><p><strong>Dependency rules</strong> are stored in the <strong>runtime config</strong> and therefore, can be easily changed for specific business needs.</p></li><li><p>If <strong>only a subset of curated tables</strong> will be loaded into the data warehouse, the loading procedure will need to first load data with a placeholder on keys and then replace the placeholder with the actual key when data is available. This will <strong>increase the complexity of the stored procedure</strong>.</p></li><li><p>The <strong>hyper pipeline status check</strong> <strong>by the checkpoint function </strong>needs to <strong>pertain to a list of data feeds</strong>. This can be achieved via parameter values populated by a trigger. In the build-time config, specify what data feeds are expected to be ingested into data lakee and data warehouse.</p></li><li><p>When back filling for tables that were turned off, manual runs are required and each time will run all the tables for the warehouse. The primary design is that duplicate data will be prevent by the effective usage of time stamps to manage the loads (by making them idempotent <a href="https://discourse.getdbt.com/t/understanding-idempotent-data-transformations/518" class="external-link" rel="nofollow">Understanding idempotent data transformations - Modeling - dbt Discourse (getdbt.com)</a>.  if this proves problematic then a traditional ETL control framework which tracks which tables have loaded for which execution can be added as an enhancement.</p></li></ul></td><td class="confluenceTd"><p><span class="inline-comment-marker" data-ref="51607f6e-891f-4564-ba9d-56ae50b1c0e6">Yes</span></p></td></tr><tr><td class="confluenceTd"><p>2</p></td><td class="confluenceTd"><p><strong>Track </strong>if <strong>any data feed never gets ingested</strong> in the data warehouse.</p></td><td class="confluenceTd"><p><span class="inline-comment-marker" data-ref="ef71b38b-8d4b-40f6-bae7-46c4ce7e5961">What data feeds go into the data warehouse is controlled by the </span><strong><span class="inline-comment-marker" data-ref="ef71b38b-8d4b-40f6-bae7-46c4ce7e5961">runtime confi</span>g</strong>, it is user’s responsibility to make sure all the intended data feeds are included in the config, e.g. add in a new data feed. If within the list of data feeds, some data doesn’t reach to the end, the Data Vault or Star Schema Pipeline will fail, and subsequently, the <strong>Data Warehouse Hyper Pipeline will fail</strong>. By using the ADF Annotation and User Properties, we can easily track what data feed and destination tables fail to load. the Check point function should check if all curated tables have an attached dependency rule</p></td><td class="confluenceTd"><p>Yes</p></td></tr><tr><td class="confluenceTd"><p>3</p></td><td class="confluenceTd"><p><strong>Various ingestion cadence</strong> into the data lake</p></td><td class="confluenceTd"><p><span class="inline-comment-marker" data-ref="31f59c0f-f8b7-4abf-9f58-7e913c0d7492">The scheduled triggers are built during the deployment phase using </span><strong><span class="inline-comment-marker" data-ref="31f59c0f-f8b7-4abf-9f58-7e913c0d7492">build-time config</span></strong><span class="inline-comment-marker" data-ref="31f59c0f-f8b7-4abf-9f58-7e913c0d7492">. The build-time config informs for a data warehouse table (e.g. data vault or star schema) what cadence to run. The cadence will be decided by users on a  case by case</span> basis.</p></td><td class="confluenceTd"><p>Yes</p></td></tr><tr><td class="confluenceTd"><p>4</p></td><td class="confluenceTd"><p><strong>Rerun </strong>the Data Warehouse Hyper Pipeline from the <strong>failed activity.</strong></p></td><td class="confluenceTd"><p>Since the hyper pipeline has forEach loops, some data will inevitably be <strong>re-ingested during a rerun</strong>. The data warehouse loading scripts will be implemented in a way that <strong>only new records or existing records with changes will be inserted (handled by SQL statements)</strong>.  The load must be <strong>idempotent.</strong> No duplications will be inserted. This can handle the rerun any successfully finished data warehouse table loading.</p></td><td class="confluenceTd"><p>Yes</p></td></tr></tbody></table></div><h3 id="DataWarehousePipeline-3.Process-ADFMonitorandPipelineDebug">ADF Monitor and Pipeline Debug</h3><p>When building the data lake pipelines, we rely on the trigger name to inform what file is processed in a particular Data Lake Hyper Pipeline. The screenshot below shows a data lake pipeline run for Pega bix extract called VMIA Interface Payment. The hyper pipeline consists of the acquisition, ingestion and curated pipeline. <strong>Note </strong>that within the hyper pipeline, the <strong>Triggered by </strong>values of between sub-pipelines triggers are the pipeline RunIds.</p><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/469860353/492896296.png" data-image-src="attachments/469860353/492896296.png" data-height="340" data-width="1455" data-unresolved-comment-count="0" data-linked-resource-id="492896296" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20201216-012341.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="469860353" data-linked-resource-container-version="42" data-media-id="a782efb3-aea2-4883-ab69-18f3d8a6e811" data-media-type="file"></span><p>For the generic data warehouse hyper pipeline, we should use <strong><span class="inline-comment-marker" data-ref="2047b72c-dd5a-4521-97e4-f9d1196a3403">Annotation (for pipeline displaying source system)</span></strong><span class="inline-comment-marker" data-ref="2047b72c-dd5a-4521-97e4-f9d1196a3403"> and </span><strong><span class="inline-comment-marker" data-ref="2047b72c-dd5a-4521-97e4-f9d1196a3403">User Properties (for activity displaying data feed)</span> </strong>to provide additional metadata. See the <a href="https://www.cathrinewilhelmsen.net/2019/12/14/annotations-user-properties-azure-data-factory/" class="external-link" rel="nofollow">Elaboration </a>on how to create and use Annotation for detail.</p><p>For <strong>pipelines </strong>in ADF, we should use parameters to define the values in <strong>Annotation</strong>. Annotation is <a href="https://stackoverflow.com/questions/62929329/add-dynamic-content-to-annotations-in-azure-data-factory" class="external-link" rel="nofollow">no longer available in ADF UI but can still be added in via the JSON code</a>. </p><p><strong>Step 1:</strong> Create a Parameter at the pipeline level.</p><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/469860353/492994573.png" data-image-src="attachments/469860353/492994573.png" data-height="626" data-width="976" data-unresolved-comment-count="0" data-linked-resource-id="492994573" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20201216-023216.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="469860353" data-linked-resource-container-version="42" data-media-id="bdd2e6c1-30ca-49c6-9723-f15657fea381" data-media-type="file"></span><p><strong>Step 2:</strong> Go to the code editor at the pipeline level. The default value of Annotation is []. Add in dynamic content in the list.</p><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/469860353/487784693.png" data-image-src="attachments/469860353/487784693.png" data-height="714" data-width="534" data-unresolved-comment-count="0" data-linked-resource-id="487784693" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20201216-023341.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="469860353" data-linked-resource-container-version="42" data-media-id="69217260-4d72-4fef-bb6d-95add596ba0a" data-media-type="file"></span><p><strong>Step 3:</strong> After publishing, deploying and rerunning the pipeline, in ADF Monitor, the <strong>Annotation field</strong> will appear the icon with the parameter value inside. Can use the<strong> Add Filter</strong> to filter log item that only contain a specific Annotation value.</p><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/469860353/488308931.png" data-image-src="attachments/469860353/488308931.png" data-height="486" data-width="1495" data-unresolved-comment-count="0" data-linked-resource-id="488308931" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20201216-023538.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="469860353" data-linked-resource-container-version="42" data-media-id="5676e302-ae14-4df1-b614-1b7ab437d7e5" data-media-type="file"></span><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/469860353/492765231.png" data-image-src="attachments/469860353/492765231.png" data-height="278" data-width="1490" data-unresolved-comment-count="0" data-linked-resource-id="492765231" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20201216-030449.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="469860353" data-linked-resource-container-version="42" data-media-id="b6f73cff-12ec-4d5f-9282-b1ceff2bf078" data-media-type="file"></span><p>For <strong>activities </strong>in ADF, we can use dynamic content to define the values of up to <strong>5</strong> fields in <strong>User Properties</strong>. </p><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/469860353/492765212.png" data-image-src="attachments/469860353/492765212.png" data-height="578" data-width="1314" data-unresolved-comment-count="0" data-linked-resource-id="492765212" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20201216-014037.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="469860353" data-linked-resource-container-version="42" data-media-id="2c416419-f206-47c3-a957-2df7b13097a2" data-media-type="file"></span><p>In the ADF Monitor, for the activities that have User Properties, we can click on the icon to see detail, as well as add a particular field into the log table.</p><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/469860353/493027358.png" data-image-src="attachments/469860353/493027358.png" data-height="740" data-width="1516" data-unresolved-comment-count="0" data-linked-resource-id="493027358" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20201216-013841.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="469860353" data-linked-resource-container-version="42" data-media-id="9b67622a-4f1a-4f5e-acd3-7b3092d0abd8" data-media-type="file"></span><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/469860353/492896306.png" data-image-src="attachments/469860353/492896306.png" data-height="442" data-width="1289" data-unresolved-comment-count="0" data-linked-resource-id="492896306" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20201216-014455.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="469860353" data-linked-resource-container-version="42" data-media-id="74354793-5023-46a2-82e0-9ba418422ef7" data-media-type="file"></span><h1 id="DataWarehousePipeline-3.Process-MeetingtoreviewDesignforpipelinedependenciesinpipelinesorconfigValidationwithVMIA">Meeting to review Design for pipeline dependencies in pipelines or configValidation with VMIA</h1><p>To maximise the value delivered and minimise the solution complexity, we hosted a session to validate with VMIA and also seek their opinion and preference.</p><p><strong>Attendees</strong>: <a class="confluence-userlink user-mention" data-username="5eec340a41f7000abb28f815" data-account-id="5eec340a41f7000abb28f815" href="https://vmia.atlassian.net/wiki/people/5eec340a41f7000abb28f815?ref=confluence" target="_blank" data-base-url="https://vmia.atlassian.net/wiki">Bo Kwon (Deactivated)</a> , <a class="confluence-userlink user-mention" data-username="5f97265e44658b00710f438d" data-account-id="5f97265e44658b00710f438d" href="https://vmia.atlassian.net/wiki/people/5f97265e44658b00710f438d?ref=confluence" target="_blank" data-base-url="https://vmia.atlassian.net/wiki">Rahul Pandey (Deactivated)</a>, <a class="confluence-userlink user-mention" data-username="5dbb971f4ff1890d3103875a" data-account-id="5dbb971f4ff1890d3103875a" href="https://vmia.atlassian.net/wiki/people/5dbb971f4ff1890d3103875a?ref=confluence" target="_blank" data-linked-resource-id="6979594" data-linked-resource-version="1" data-linked-resource-type="userinfo" data-base-url="https://vmia.atlassian.net/wiki">Lasath Kahingala</a>,  <a class="confluence-userlink user-mention" data-username="5ecf250a4824b20c182c6999" data-account-id="5ecf250a4824b20c182c6999" href="https://vmia.atlassian.net/wiki/people/5ecf250a4824b20c182c6999?ref=confluence" target="_blank" data-linked-resource-id="6979597" data-linked-resource-version="1" data-linked-resource-type="userinfo" data-base-url="https://vmia.atlassian.net/wiki">h.lindsaysmith@vmia.vic.gov.au Lindsay-Smith</a>, <a class="confluence-userlink user-mention" data-username="5dc205aeb6e6b50c58aeca8b" data-account-id="5dc205aeb6e6b50c58aeca8b" href="https://vmia.atlassian.net/wiki/people/5dc205aeb6e6b50c58aeca8b?ref=confluence" target="_blank" data-base-url="https://vmia.atlassian.net/wiki">Sarah Fan (Deactivated)</a> </p><h2 id="DataWarehousePipeline-3.Process-Usingconfigtodescribetabledependenciesvs.embeddingthedependenciesinpipelinesequence">Using config to describe table dependencies vs. embedding the dependencies in pipeline sequence</h2><p>This question assesses VMIA’s preference in managing table dependencies between using config or a more visual, static, hardcoded approach. In this case we are talking about the sequencing of what snowflake stored procedures run and which ones run in parallel or have dependencies. Both Rahul and Bo preferred to use config as it provides flexibility to change ordering without having to alter the pipeline, extensibility and is less labour intensive to implement. When asked then question of how we should figure out the table dependencies from the config easily (as this can be argued is one of the benefits of dependencies defined statically in a visual tool), Rahul mentioned that the data governance stream is expected to procure a tool which can build a data lineage diagram and in his opinion this is what should be used to understand the flow of data through the warehouse, not the config or ADF dataflows. The config is more to be used for dependency checks and process orchestration. When a dependency changes the config should be what is changed and the lineage derived from this (or the actual execution of sql on snowflake which is also possibel wi9th some tools)</p><p>It was agreed that the design to sequence stored procedures via config should be POCed</p><p />
+                    </div>
+
+                                        <div class="pageSection group">
+                        <div class="pageSectionHeader">
+                            <h2 id="attachments" class="pageSectionTitle">Attachments:</h2>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/469893250.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/470122625.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/462651967.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/469860449.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/462815839.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/470057097.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/470057106.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/470089844.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/469827717.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/462881551.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/462914179.svg">data_warehouse_process.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/462652013.png">data_warehouse_process.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/462652125.svg">data_warehouse_process.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/469827827.png">data_warehouse_process.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/469860563.svg">data_warehouse_process.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/469860573.png">data_warehouse_process.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/469860625.svg">data_warehouse_process.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/469991666.png">data_warehouse_process.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/469991622.tmp">~data_warehouse_orchestration.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/469991631.tmp">~data_warehouse_orchestration.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/470057263.tmp">~data_warehouse_orchestration.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/469926078.tmp">~data_warehouse_orchestration.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/462914259.tmp">~data_warehouse_orchestration.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/462815967.tmp">~data_warehouse_orchestration.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/469827864.tmp">~data_warehouse_orchestration.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/470057272.tmp">~data_warehouse_orchestration.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/462652172.tmp">~data_warehouse_orchestration.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/470122791.tmp">~data_warehouse_orchestration.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/561840810.svg">data_warehouse_orchestration2.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/561742490.png">data_warehouse_orchestration2.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495682248.svg">data_warehouse_process.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495845987.png">data_warehouse_process.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/472745172.svg">Data_warehouse_hyper_pipeline.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/472974368.png">Data_warehouse_hyper_pipeline.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/493060704.svg">Data_warehouse_hyper_pipeline.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/492864147.png">Data_warehouse_hyper_pipeline.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/487784652.png">image-20201216-011835.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/492896296.png">image-20201216-012341.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/493027358.png">image-20201216-013841.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/492765212.png">image-20201216-014037.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/492896306.png">image-20201216-014455.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/492994573.png">image-20201216-023216.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/487784693.png">image-20201216-023341.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/488308931.png">image-20201216-023538.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/492765231.png">image-20201216-030449.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/492765689.svg">Data_warehouse_hyper_pipeline.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/492864169.png">Data_warehouse_hyper_pipeline.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495845597.svg">Data_warehouse_hyper_pipeline.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495386896.png">Data_warehouse_hyper_pipeline.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495747806.svg">Data_warehouse_hyper_pipeline.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495747816.png">Data_warehouse_hyper_pipeline.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495780585.svg">data_warehouse_process.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495846009.png">data_warehouse_process.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495747900.svg">data_warehouse_process.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495616721.png">data_warehouse_process.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495780734.svg">Data_warehouse_hyper_pipeline.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495649741.png">Data_warehouse_hyper_pipeline.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495649687.tmp">~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495649701.tmp">~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495616707.tmp">~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495682352.tmp">~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495584100.svg">data_warehouse_process.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495584110.png">data_warehouse_process.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495682366.tmp">~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495780675.tmp">~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495846119.tmp">~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495780689.tmp">~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495616773.tmp">~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495616783.svg">data_warehouse_process.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/495584170.png">data_warehouse_process.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/556597249.svg">Data_warehouse_hyper_pipeline.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/556597259.png">Data_warehouse_hyper_pipeline.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/469893261.tmp">~data_warehouse_process.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/469860458.svg">data_warehouse_process.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/462815848.png">data_warehouse_process.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/556171323.svg">Data_warehouse_hyper_pipeline.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/556433429.png">Data_warehouse_hyper_pipeline.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/556138581.svg">Data_warehouse_hyper_pipeline.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/556433485.png">Data_warehouse_hyper_pipeline.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/556433508.svg">Data_warehouse_hyper_pipeline.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/556105863.png">Data_warehouse_hyper_pipeline.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/558989321.svg">Data_warehouse_hyper_pipeline.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/558989331.png">Data_warehouse_hyper_pipeline.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/556171444.tmp">~Data_warehouse_hyper_pipeline.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/556499034.tmp">~Data_warehouse_hyper_pipeline.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/556073076.tmp">~Data_warehouse_hyper_pipeline.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/559153345.tmp">~Data_warehouse_hyper_pipeline.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/564494347.svg">Data_warehouse_hyper_pipeline.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/564527127.png">Data_warehouse_hyper_pipeline.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/559218857.tmp">~Data_warehouse_hyper_pipeline.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/561741875.tmp">~Data_warehouse_hyper_pipeline.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/564461583.tmp">~Data_warehouse_hyper_pipeline.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/561840785.tmp">~data_warehouse_orchestration2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/559153935.tmp">~data_warehouse_orchestration2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/561545950.tmp">~data_warehouse_orchestration2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/561775121.tmp">~data_warehouse_orchestration2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/561611424.tmp">~data_warehouse_orchestration2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/559219489.tmp">~data_warehouse_orchestration2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/561775130.tmp">~data_warehouse_orchestration2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/561808110.tmp">~data_warehouse_orchestration2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/561742481.tmp">~data_warehouse_orchestration2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/559219481.tmp">~data_warehouse_orchestration2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/469893412.svg">data_warehouse_orchestration2.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/462652181.png">data_warehouse_orchestration2.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/564527117.tmp">~Data_warehouse_hyper_pipeline.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580386887.tmp">~Data_warehouse_hyper_pipeline.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/472613684.svg">Data_warehouse_hyper_pipeline.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/472581189.png">Data_warehouse_hyper_pipeline.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/472612865.tmp">~Data_warehouse_hyper_pipeline.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580124855.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580354170.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580026502.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580354179.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580124864.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580419714.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580026511.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580026520.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580190370.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580092010.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580190382.svg">DW_process_2.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580223127.png">DW_process_2.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580092111.svg">DW_process_2.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580321392.png">DW_process_2.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580124883.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580059310.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580157634.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580124892.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580354225.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580223147.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580223156.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/579993870.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580386956.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580419743.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580026573.svg">DW_process_3.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/579993895.png">DW_process_3.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580092257.svg">DW_process_2.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580059465.png">DW_process_2.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580026645.svg">DW_process_3.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580223230.png">DW_process_3.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580026635.tmp">~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580124979.tmp">~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580321506.tmp">~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580092173.tmp">~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580190476.tmp">~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580223220.tmp">~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580387062.tmp">~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580354344.tmp">~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580419851.tmp">~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580419768.tmp">~DW_process_3.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580419748.svg">DW_process_3.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580223165.png">DW_process_3.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580026683.tmp">~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580092239.tmp">~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580321552.tmp">~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580125019.tmp">~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580354412.tmp">~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580354426.tmp">~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/579993992.tmp">~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580190554.tmp">~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580223303.tmp">~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580419728.tmp">~DW_process_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580354188.svg">DW_process_2.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/469860353/580157614.png">DW_process_2.svg.png</a> (image/png)
+                                <br/>
+                                                    </div>
+                    </div>
+                    
+                                                      
+                </div>             </div> 
+            <div id="footer" role="contentinfo">
+                <section class="footer-body">
+                    <p>Document generated by Confluence on Dec 15, 2021 03:35</p>
+                    <div id="footer-logo"><a href="http://www.atlassian.com/">Atlassian</a></div>
+                </section>
+            </div>
+        </div>     </body>
+</html>

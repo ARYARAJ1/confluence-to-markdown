@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SDI : Risk Console - Archive Data Load</title>
+        <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body class="theme-default aui-theme-default">
+        <div id="page">
+            <div id="main" class="aui-page-panel">
+                <div id="main-header">
+                    <div id="breadcrumb-section">
+                        <ol id="breadcrumbs">
+                            <li class="first">
+                                <span><a href="index.html">SDI</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="Ingestion-Pipelines_1327628295.html">Ingestion Pipelines</a></span>
+                            </li>
+                                                </ol>
+                    </div>
+                    <h1 id="title-heading" class="pagetitle">
+                                                <span id="title-text">
+                            SDI : Risk Console - Archive Data Load
+                        </span>
+                    </h1>
+                </div>
+
+                <div id="content" class="view">
+                    <div class="page-metadata">
+                        
+        
+    
+        
+    
+        
+        
+            Created by <span class='author'> Rahul Pandey</span>, last modified on Nov 10, 2021
+                        </div>
+                    <div id="main-content" class="wiki-content group">
+                    <h2 id="RiskConsole-ArchiveDataLoad-Introduction">Introduction</h2><p>This is the final once off feed of all the data to be received form Risk Console and to be loaded into Snowflake Curated database for fetching into data warehouse layer for further reporting purposes.</p><h2 id="RiskConsole-ArchiveDataLoad-DataPipeline">Data Pipeline</h2><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio-sketch1005598145458131433">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio-sketch1005598145458131433"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio-sketch1005598145458131433",
+    "key":"drawio-sketch",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=1287847959&diagramName=RC+Archive+Load&revision=1&width=581&height=327&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=1287847959&displayName=RC+Archive+Load&contentId=&custContentId=1288536079&contentVer=1&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&sketch=1&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio-sketch1005598145458131433&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1213.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"editor\":{\"version\":\"\\\"v2\\\"\"},\"macro\":{\"outputType\":\"html_export\",\"hash\":\"0745e743-26a3-4b13-ae74-644615c6fe46\",\"id\":\"0745e743-26a3-4b13-ae74-644615c6fe46\"},\"content\":{\"type\":\"page\",\"version\":\"3\",\"id\":\"1287847959\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"1287847959\",\"macro.hash\":\"0745e743-26a3-4b13-ae74-644615c6fe46\",\"page.type\":\"page\",\"macro.localId\":\"be6ac431-78b2-4c16-9012-1820c6be71a6\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=1287847959|custContentId=1288536079|lbox=1|diagramDisplayName=RC Archive Load|contentVer=1|revision=1|baseUrl=https://vmia.atlassian.net/wiki|diagramName=RC Archive Load|pCenter=0|width=581|links=|tbstyle=|height=327\",\"space.id\":\"262145\",\"diagramDisplayName\":\"RC Archive Load\",\"diagramName\":\"RC Archive Load\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"327\",\"space.key\":\"SDI\",\"user.id\":\"5ecf250a4824b20c182c6999\",\"content.version\":\"3\",\"page.title\":\"Risk Console - Archive Data Load\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"1287847959\",\"custContentId\":\"1288536079\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"1\",\"page.version\":\"3\",\"revision\":\"1\",\"user.key\":\"8a7f80897281861b017282ee78850105\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"1287847959\",\"width\":\"581\",\"macro.id\":\"0745e743-26a3-4b13-ae74-644615c6fe46\",\"editor.version\":\"\\\"v2\\\"\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<p>The below manual activates are done to facilitate the load since this is an once off activity - </p><div class="panel" style="background-color: #EAE6FF;border-color: #998DD9;border-width: 1px;"><div class="panelContent" style="background-color: #EAE6FF;">
+<p>Since this is once off load. The load in snowflake will happen directly into curated layer.</p>
+</div></div><ul><li><p>Created a schema “RISKCONSOLE_ARCHIVE” in SDI_PRD_CURATED_DB</p></li><li><p>created a file format and stage as below relevant to the files being loaded; where &lt;ENV&gt; is the environment where the objects are to be created - DEVRP/PRD. Replacing value should be case sensitive</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: sql; gutter: false; theme: Confluence" data-theme="Confluence">CREATE FILE FORMAT &quot;SDI_&lt;ENV&gt;_CURATED_DB&quot;.&quot;RISKCONSOLE_ARCHIVE&quot;.FORMAT_RISKCONSOLE_ARCHIVE_CSV TYPE = &#39;CSV&#39; COMPRESSION = &#39;AUTO&#39; FIELD_DELIMITER = &#39;|&#39; RECORD_DELIMITER = &#39;\n&#39; SKIP_HEADER = 0 FIELD_OPTIONALLY_ENCLOSED_BY = &#39;NONE&#39; TRIM_SPACE = FALSE ERROR_ON_COLUMN_COUNT_MISMATCH = TRUE ESCAPE = &#39;NONE&#39; ESCAPE_UNENCLOSED_FIELD = &#39;\134&#39; DATE_FORMAT = &#39;AUTO&#39; TIMESTAMP_FORMAT = &#39;AUTO&#39; NULL_IF = (&#39;\\N&#39;);
+
+create or replace stage AZURE_RISKCONSOLE_ARCHIVE
+storage_integration = AZURE_INTEGRATION_&lt;ENV&gt;_RAW_DATALAKE
+url = &#39;azure://stsdi&lt;env&gt;datalake.blob.core.windows.net/raw-sdi-&lt;env&gt;-datalake/RISKCONSOLE_ARCHIVE/&#39;
+file_format = FORMAT_RISKCONSOLE_ARCHIVE_CSV;
+</pre>
+</div></div></li><li><p>Created a click ops pipe to loop through a folder which has all the relevant files and copy individual files into raw containers of storage account “raw-sdi-&lt;env&gt;-datalake”. and then use the above stage to read the files and copy into its relevant tables in snowflake.</p></li><li><p>Some variables created for the pipelines is as below (to be manipulated if needed) - <br/>schema - RISKCONSOLE_ARCHIVE<br/>folderPath - ‘Apps\SAS\From_AON\VentivDecom’<br/>timestamp - ‘_20210922_0000.txt’ (part of the file to be removed to have table names)</p></li></ul><h2 id="RiskConsole-ArchiveDataLoad-TableStructures">Table Structures</h2><p>The process to have the tables created for these files is as below - </p><ol><li><p>create configs for the tables to be ingested in <a href="https://bitbucket.org/VMIASourceCode/sdi_configuration/src/master/" data-card-appearance="inline" class="external-link" rel="nofollow">https://bitbucket.org/VMIASourceCode/sdi_configuration/src/master/</a> ; build and deploy into cosmos DB</p></li><li><p>Use the /workspaces/sdi_database_definitions/schema_evolution/bin/generate-ddl.sh to generate the create statements for these data feeds/tables using the configs created in step 1</p></li><li><p>Run /workspaces/sdi_database_definitions/schema_evolution/bin/validation_framework.sh to check if the create statements deploy correctly and push these changes into further branches until master/PROD</p></li></ol><div class="panel" style="background-color: #EAE6FF;border-color: #998DD9;border-width: 1px;"><div class="panelContent" style="background-color: #EAE6FF;">
+<ul><li><p>The tables for this load will not have audit columns as there wont be any history maintenance ever done.</p></li><li><p>Fetch from this dataset into DWH layer will be a simple select * from &lt;table_name&gt; without any conditions/where clause</p></li></ul>
+</div></div><div class="confluence-information-macro confluence-information-macro-note"><span class="aui-icon aui-icon-small aui-iconfont-warning confluence-information-macro-icon"></span><div class="confluence-information-macro-body"><p>Since this is simple fetch and load. The file/tables structure validations is prerequisite to this ingestion.</p></div></div><p />
+                    </div>
+
+                                        <div class="pageSection group">
+                        <div class="pageSectionHeader">
+                            <h2 id="attachments" class="pageSectionTitle">Attachments:</h2>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1287847959/1287684224">RC Archive Load</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1287847959/1287585883.png">RC Archive Load.png</a> (image/png)
+                                <br/>
+                                                    </div>
+                    </div>
+                    
+                                                      
+                </div>             </div> 
+            <div id="footer" role="contentinfo">
+                <section class="footer-body">
+                    <p>Document generated by Confluence on Feb 24, 2022 03:32</p>
+                    <div id="footer-logo"><a href="http://www.atlassian.com/">Atlassian</a></div>
+                </section>
+            </div>
+        </div>     </body>
+</html>

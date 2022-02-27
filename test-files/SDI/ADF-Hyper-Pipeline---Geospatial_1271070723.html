@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SDI : ADF Hyper Pipeline - Geospatial</title>
+        <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body class="theme-default aui-theme-default">
+        <div id="page">
+            <div id="main" class="aui-page-panel">
+                <div id="main-header">
+                    <div id="breadcrumb-section">
+                        <ol id="breadcrumbs">
+                            <li class="first">
+                                <span><a href="index.html">SDI</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="Ingestion-Pipelines_1327628295.html">Ingestion Pipelines</a></span>
+                            </li>
+                                                </ol>
+                    </div>
+                    <h1 id="title-heading" class="pagetitle">
+                                                <span id="title-text">
+                            SDI : ADF Hyper Pipeline - Geospatial
+                        </span>
+                    </h1>
+                </div>
+
+                <div id="content" class="view">
+                    <div class="page-metadata">
+                        
+        
+    
+        
+    
+        
+        
+            Created by <span class='author'> Rahul Pandey</span>, last modified by <span class='editor'> Cameron Roberts</span> on Feb 08, 2022
+                        </div>
+                    <div id="main-content" class="wiki-content group">
+                    <h2 id="ADFHyperPipeline-Geospatial-Introduction">Introduction</h2><p>Geospatial Data Load is loaded for the business use cases as mentioned in <a href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/1088487472/1.1+Catastrophic+Event+-+Potential" data-linked-resource-id="1088487472" data-linked-resource-version="26" data-linked-resource-type="page">1.1 Catastrophic Event - Potential</a>  &amp; <a href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/1088978976/1.2+Catastrophic+Event+-+Immediate+Danger" data-linked-resource-id="1088978976" data-linked-resource-version="12" data-linked-resource-type="page">1.2 Catastrophic Event - Immediate Danger</a> </p><h2 id="ADFHyperPipeline-Geospatial-Pre-requisite">Pre-requisite</h2><p>To be able to extract data from ArcGIS platform, a python script will be written, that will - </p><ol><li><p>Extract data for all listed shape files and convert to JSON format file</p></li><li><p>Create delta files for files bigger than 500 MB (<strong>may not be required)</strong>, </p></li><li><p>Strip extra outer elements of the JSON and only capture the array of actual values having the key list of values as separate records in the file. This is done to catered for the JSON files which are bigger than the max threshold of column size that snowflake can handle (16 MB). Example - </p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">{
+    &quot;type&quot;: &quot;FeatureCollection&quot;,
+    &quot;crs&quot;: {
+        &quot;type&quot;: &quot;name&quot;,
+        &quot;properties&quot;: {
+            &quot;name&quot;: &quot;EPSG:4326&quot;
+        }
+    },
+    &quot;features&quot;: [
+        {
+            &quot;type&quot;: &quot;Feature&quot;,
+            &quot;id&quot;: 0,
+            &quot;geometry&quot;: {
+                &quot;type&quot;: &quot;Point&quot;,
+                &quot;coordinates&quot;: [
+                    145.69557906700004,
+                    -37.839049165999938
+                ]
+            },
+            &quot;properties&quot;: {
+                &quot;FID&quot;: 0,
+                &quot;PLOT&quot;: 1638,
+                &quot;EAST&quot;: 385223,
+                &quot;NORTH&quot;: 5811241,
+                &quot;TEAM&quot;: &quot;FS4&quot;,
+                &quot;DLDATA&quot;: &quot;17-Apr-2009 13:15&quot;,
+                &quot;EXAMIN&quot;: &quot;CC,JB&quot;,
+                &quot;FIRE&quot;: &quot;Bunyip&quot;
+            }
+        }
+    ]
+}</pre>
+</div></div><p>changed to</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">{
+    &quot;type&quot;: &quot;Feature&quot;,
+    &quot;id&quot;: 0,
+    &quot;geometry&quot;: {
+        &quot;type&quot;: &quot;Point&quot;,
+        &quot;coordinates&quot;: [
+            145.69557906700004,
+            -37.839049165999938
+        ]
+    },
+    &quot;properties&quot;: {
+        &quot;FID&quot;: 0,
+        &quot;PLOT&quot;: 1638,
+        &quot;EAST&quot;: 385223,
+        &quot;NORTH&quot;: 5811241,
+        &quot;TEAM&quot;: &quot;FS4&quot;,
+        &quot;DLDATA&quot;: &quot;17-Apr-2009 13:15&quot;,
+        &quot;EXAMIN&quot;: &quot;CC,JB&quot;,
+        &quot;FIRE&quot;: &quot;Bunyip&quot;
+    }
+}</pre>
+</div></div><p>This script is as below and is going to be used by Geospatial analyst to create the files listed here <a href="https://vmia.atlassian.net/wiki/spaces/VIA/pages/648937473" data-linked-resource-id="648937473" data-linked-resource-version="10" data-linked-resource-type="page">https://vmia.atlassian.net/wiki/spaces/VIA/pages/648937473</a> <br/></p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: py; gutter: false; theme: Confluence" data-theme="Confluence">import os
+import sys
+import json
+import logging
+
+logger = logging.getLogger()
+
+def main():
+    in_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),&quot;./in_Files/&quot;)
+    out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),&quot;./out_Files/&quot;)
+
+    filelist = os.listdir(in_path)
+    print(filelist)
+
+    for f in filelist:
+        print(f&#39;file processed: {f}&#39;)
+        in_file = os.path.join(in_path,f)
+        out_file = os.path.join(out_path,f)
+        r = open(in_file,&quot;r&quot;)
+
+        data = json.load(r)
+
+        for key, value in data.items():
+            if (type(value)) == list:
+                j_data = data[key]
+            else:
+                j_data = data
+
+        j_data_s = json.dumps(j_data).encode(&#39;utf-8&#39;)
+        outfile_path = os.path.join(out_path,f)
+        logger.info(&quot;Creating JSON File.&quot;)
+        with open(out_file,&quot;w&quot;) as w:
+            json.dump(j_data, w)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</pre>
+</div></div></li></ol><h2 id="ADFHyperPipeline-Geospatial-HighLevelDesign-">High Level Design -</h2><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio-sketch5703425701399040460">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio-sketch5703425701399040460"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio-sketch5703425701399040460",
+    "key":"drawio-sketch",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=1271070723&diagramName=Geo+Data+Curated&revision=2&width=1273&height=428&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=1271070723&displayName=Geo+Data+Curated&contentId=&custContentId=1270612018&contentVer=2&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&sketch=1&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio-sketch5703425701399040460&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1213.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"editor\":{\"version\":\"\\\"v2\\\"\"},\"macro\":{\"outputType\":\"html_export\",\"hash\":\"d45aabc7-d0ac-4125-863a-56a3e2a66ff7\",\"id\":\"d45aabc7-d0ac-4125-863a-56a3e2a66ff7\"},\"content\":{\"type\":\"page\",\"version\":\"19\",\"id\":\"1271070723\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"1271070723\",\"macro.hash\":\"d45aabc7-d0ac-4125-863a-56a3e2a66ff7\",\"page.type\":\"page\",\"macro.localId\":\"7f8998de-e5a9-4e3f-8600-9d21d5598312\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=1271070723|custContentId=1270612018|lbox=1|diagramDisplayName=Geo Data Curated|contentVer=2|revision=2|baseUrl=https://vmia.atlassian.net/wiki|diagramName=Geo Data Curated|pCenter=0|width=1273|links=|tbstyle=|height=428\",\"space.id\":\"262145\",\"diagramDisplayName\":\"Geo Data Curated\",\"diagramName\":\"Geo Data Curated\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"428\",\"space.key\":\"SDI\",\"user.id\":\"5ecf250a4824b20c182c6999\",\"content.version\":\"19\",\"page.title\":\"ADF Hyper Pipeline - Geospatial\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"1271070723\",\"custContentId\":\"1270612018\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"2\",\"page.version\":\"19\",\"revision\":\"2\",\"user.key\":\"8a7f80897281861b017282ee78850105\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"1271070723\",\"width\":\"1273\",\"macro.id\":\"d45aabc7-d0ac-4125-863a-56a3e2a66ff7\",\"editor.version\":\"\\\"v2\\\"\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<h3 id="ADFHyperPipeline-Geospatial-CuratedHyperPipeline">Curated Hyper Pipeline</h3><ul><li><p>The core infrastructure and run-time setup for the ADF hyper-pipeline will follow <a href="Data-Lab_981106699.html" data-linked-resource-id="981106699" data-linked-resource-version="11" data-linked-resource-type="page">Data lab</a> approach with most of the logical processing and functions re-used from <a href="424116229.html" data-linked-resource-id="424116229" data-linked-resource-version="23" data-linked-resource-type="page">ADF Hyper Pipeline - File Server (Risk Console)</a> </p></li><li><p>Including a config layer for defining/validating structure of the data feed</p></li></ul><h4 id="ADFHyperPipeline-Geospatial-DetailTechnicalDesign-">Detail Technical Design - </h4><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio-sketch3725352479903668655">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio-sketch3725352479903668655"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio-sketch3725352479903668655",
+    "key":"drawio-sketch",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=1271070723&diagramName=Curated+Hyper+Pipeline&revision=5&width=1460&height=436.00000000000006&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=1271070723&displayName=Curated+Hyper+Pipeline&contentId=&custContentId=1276215399&contentVer=5&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&sketch=1&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio-sketch3725352479903668655&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1213.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"editor\":{\"version\":\"\\\"v2\\\"\"},\"macro\":{\"outputType\":\"html_export\",\"hash\":\"2cafed22-899e-409f-bf96-100a1bcf44a0\",\"id\":\"2cafed22-899e-409f-bf96-100a1bcf44a0\"},\"content\":{\"type\":\"page\",\"version\":\"19\",\"id\":\"1271070723\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"1271070723\",\"macro.hash\":\"2cafed22-899e-409f-bf96-100a1bcf44a0\",\"page.type\":\"page\",\"macro.localId\":\"8fb9d86e-313d-4531-bdbb-47d27d824285\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=1271070723|custContentId=1276215399|lbox=1|diagramDisplayName=Curated Hyper Pipeline|contentVer=5|revision=5|baseUrl=https://vmia.atlassian.net/wiki|diagramName=Curated Hyper Pipeline|pCenter=0|width=1460|links=|tbstyle=|height=436.00000000000006\",\"space.id\":\"262145\",\"diagramDisplayName\":\"Curated Hyper Pipeline\",\"diagramName\":\"Curated Hyper Pipeline\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"436.00000000000006\",\"space.key\":\"SDI\",\"user.id\":\"5ecf250a4824b20c182c6999\",\"content.version\":\"19\",\"page.title\":\"ADF Hyper Pipeline - Geospatial\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"1271070723\",\"custContentId\":\"1276215399\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"5\",\"page.version\":\"19\",\"revision\":\"5\",\"user.key\":\"8a7f80897281861b017282ee78850105\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"1271070723\",\"width\":\"1460\",\"macro.id\":\"2cafed22-899e-409f-bf96-100a1bcf44a0\",\"editor.version\":\"\\\"v2\\\"\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<h4 id="ADFHyperPipeline-Geospatial-Steps">Steps</h4><ol><li><p>Parameter parser - Azure function to parse and process the parameters passed into the ADF pipeline trigger</p></li><li><p>Acquisition layer</p><ol><li><p>The linked service/dataset connects to the network (K:/) drive (API URL, in case of API hyper pipeline) to fetch the file (data and create a json file, in case of API hyper pipeline) and places it in the rawcontainer of the data lake</p></li></ol></li><li><p>geo_last_pipeline_status_query - use the existing function last_pipeline_status_query to check the previous day’s execution for the geospatial hyper pipeline was successful or not. Fail the pipe if not</p></li><li><p>Structured layer</p><ol><li><p>Azure function copy_snowflake is triggered. This function reads file from Raw container and copies over through the Azure Storage Integration into SDI_&lt;ENV&gt;_STRUCTURED_DB.GEOSPATIAL_OFFICIAL in a RAW_&lt;table name&gt;. <strong>Note that this will be unstructured data</strong></p></li><li><p>A separate function is added to copy_snowflake to run a create statement for structured data based on the table config for these feeds. This is to validate the source data based on our current understanding of structure of the data feed (Schema Validation). </p></li></ol></li><li><p>Curated Layer - Use the time varying data load and all the needed configurations to be duplicated same as the Risk Console pipeline for this step (<em>Although in this case the merge statement will behave very simple, Ignore if present, else insert, no updates required. Reason is that the whole record with attributes would be considered as one single value to be compared, and so even if logically its an update because 1 attribute for the record changed, technically its a new record if considered as one single value</em>). The change data capture would be “Full”, so records would also soft/inferred delete if it stops coming in from source. <strong>Note that this will be unstructured data</strong> </p></li></ol><h3 id="ADFHyperPipeline-Geospatial-GeoDataDWHload">Geo Data DWH load</h3><p>The geospatial data loaded into curated layer will be considered as dimension tables for DWH layer and DWH hyper pipeline to be used for ingestion - <a href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/1054113793/Data+Warehouse+Pipeline" data-linked-resource-id="1054113793" data-linked-resource-version="22" data-linked-resource-type="page">Detailed technical design - Data Warehouse hyper pipeline</a> </p><ul><li><p>Changes to the DWH config items to include the geo data in the ingestion</p></li><li><p>Separate trigger for Geo feeds to decouple from other DWH loads, in case of Geo load anomalies, if the geo trigger needs to be stopped, it does not impact the rest of the DWH load.</p></li></ul><h3 id="ADFHyperPipeline-Geospatial-Benefits-">Benefits -</h3><ul><li><p>Most of the Data lab pipe re-used with features/logic used from Risk-Console pipelines</p></li><li><p>Simplified history retention with un-structured data.</p></li><li><p>Load into DWH can be incorporated with little tweaks in config</p></li></ul><h3 id="ADFHyperPipeline-Geospatial-LoadCadence">Load Cadence</h3><p>To be set up individually based on each feed.</p><p>At the moment, all entities in the warehouse are loaded daily. The warehouse takes whatever is valid at the window end time trigger date. This means that hourly feeds in curated will be refreshed with daily cadence in the warehouse.  </p><p><strong>Note - Test if the hourly load works?</strong></p><div class="table-wrap"><table data-layout="default" data-local-id="9c33fe70-0732-4f1f-af68-2704888baf43" class="confluenceTable"><colgroup><col/><col style="width: 226.67px;"/><col style="width: 226.67px;"/><col style="width: 226.67px;"/></colgroup><tbody><tr><th class="numberingColumn confluenceTh" /><th class="confluenceTh"><p><strong>Data feed</strong></p></th><th class="confluenceTh"><p><strong>Frequency</strong></p></th><th class="confluenceTh"><p><strong>Solution</strong></p></th></tr><tr><td class="numberingColumn confluenceTd">1</td><td class="confluenceTd"><p>Immediate danger bushfire API</p></td><td class="confluenceTd"><p>Daily and Hourly refresh</p></td><td class="confluenceTd"><p>Setup hourly refresh on the table level and then create a view to extract distinct data on a daily level (create view &lt;view name&gt; as select distinct * from &lt;table name&gt; where valid_from between 9 AM yesterday and 9 AM today).</p></td></tr><tr><td class="numberingColumn confluenceTd">2</td><td class="confluenceTd"><p /></td><td class="confluenceTd"><p /></td><td class="confluenceTd"><p /></td></tr></tbody></table></div><h3 id="ADFHyperPipeline-Geospatial-DependentTables/ViewsforGeoAnalytics-">Dependent Tables/Views for Geo Analytics - </h3><p>All view that are required for the Geo analytics use cases are to be created using the <a href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/595099738/Stored+Procedures+and+Views+Management+Framework" data-linked-resource-id="595099738" data-linked-resource-version="10" data-linked-resource-type="page">Stored Procedures and Views Management Framework</a> available in the DB definition repo - <a href="https://bitbucket.org/VMIASourceCode/sdi_database_definitions/src/develop/view_sp_definitions_framework/" data-card-appearance="inline" class="external-link" rel="nofollow">https://bitbucket.org/VMIASourceCode/sdi_database_definitions/src/develop/view_sp_definitions_framework/</a> </p><p><strong>Note - Business rules to define protected assets</strong></p><p>Some examples of view creation would be - </p><ul><li><p>Creating view on PEGA Asset table to convert longitude and latitude information into geography and some other relevant attribute. this will be a v_Asset_geo.sql create view V_ASSET_GEO.</p></li><li><p>Creating view for daily snapshot of data from the hourly history maintained Bushfire API data as mentioned in point 1, here - <a href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/1271070723/ADF+Hyper+Pipeline+-+Geospatial#Load-Cadence" data-card-appearance="inline" rel="nofollow">https://vmia.atlassian.net/wiki/spaces/SDI/pages/1271070723/Geospatial+Data+Load#Load-Cadence</a> </p></li></ul><h4 id="ADFHyperPipeline-Geospatial-Solution-">Solution - </h4><p>The view and stored procedure deployment framework to be modified to be able to create views in DWH layer alongside the curated layer views. This change will help us slowly transition the views created in curated layer for reporting into the DWH layer, if needed, and eventually phasing out the views created in the curated layer for report consumption and only have views if required, in DWH/consumption layer.</p>
+                    </div>
+
+                                        <div class="pageSection group">
+                        <div class="pageSectionHeader">
+                            <h2 id="attachments" class="pageSectionTitle">Attachments:</h2>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276772475">Geo Data Curated</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276215371.png">Geo Data Curated.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276182601.tmp">~Geo Data Curated.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276182611.tmp">~Geo Data Curated.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276411967.tmp">~Geo Data Curated.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276870715.tmp">~Geo Data Curated.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276739707.tmp">~Geo Data Curated.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276346497.tmp">~Geo Data Curated.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276215353.tmp">~Geo Data Curated.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276772465.tmp">~Geo Data Curated.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276313671.tmp">~Geo Data Curated.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1271595022.tmp">~Geo Data Curated.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1269727267">Geo Data Curated</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1270087703.png">Geo Data Curated.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276608804">Curated Hyper Pipeline</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276674334.png">Curated Hyper Pipeline.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276543334">Curated Hyper Pipeline</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276150103.png">Curated Hyper Pipeline.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276805454">Curated Hyper Pipeline</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276477832.png">Curated Hyper Pipeline.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276871072.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276576167.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276510646.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276543374.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276871082.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276740050.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276182909.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276805444.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276576177.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297645573.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298432037">Curated Hyper Pipeline</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298268213.png">Curated Hyper Pipeline.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297940481.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298071553.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298137089.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297743885.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297743895.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298006021.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297743909.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298235393.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298169861.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297678355.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298202633.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298333697.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298104325.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298006039.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297973257.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297743931.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297907733.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298300937.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297809425.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297645588.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298038797.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298235403.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298333707.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297940511.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297809439.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297612832.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297743945.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297743955.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298432013.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298399245.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297678369.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298006053.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297842197.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298300947.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298300957.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298300967.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297645606.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298006067.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298268185.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1297678379.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298268195.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298071575.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298137123.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298432027.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1298366485.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276575893.tmp">~Curated Hyper Pipeline.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276346511">Curated Hyper Pipeline</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1271070723/1276477555.png">Curated Hyper Pipeline.png</a> (image/png)
+                                <br/>
+                                                    </div>
+                    </div>
+                    
+                                                      
+                </div>             </div> 
+            <div id="footer" role="contentinfo">
+                <section class="footer-body">
+                    <p>Document generated by Confluence on Feb 24, 2022 03:30</p>
+                    <div id="footer-logo"><a href="http://www.atlassian.com/">Atlassian</a></div>
+                </section>
+            </div>
+        </div>     </body>
+</html>

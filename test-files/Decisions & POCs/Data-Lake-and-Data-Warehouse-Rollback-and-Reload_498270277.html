@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SDI : Data Lake and Data Warehouse Rollback and Reload</title>
+        <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body class="theme-default aui-theme-default">
+        <div id="page">
+            <div id="main" class="aui-page-panel">
+                <div id="main-header">
+                    <div id="breadcrumb-section">
+                        <ol id="breadcrumbs">
+                            <li class="first">
+                                <span><a href="index.html">SDI</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="1205338136.html">Decisions/POCs</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="Data-Warehouse-POC_1070989328.html">Data Warehouse POC</a></span>
+                            </li>
+                                                </ol>
+                    </div>
+                    <h1 id="title-heading" class="pagetitle">
+                                                <span id="title-text">
+                            SDI : Data Lake and Data Warehouse Rollback and Reload
+                        </span>
+                    </h1>
+                </div>
+
+                <div id="content" class="view">
+                    <div class="page-metadata">
+                        
+        
+    
+        
+    
+        
+        
+            Created by <span class='author'> Sarah Fan (Deactivated)</span>, last modified on Jan 27, 2021
+                        </div>
+                    <div id="main-content" class="wiki-content group">
+                    <h1 id="DataLakeandDataWarehouseRollbackandReload-Introduction">Introduction</h1><p>We may ingest incorrect data into the data lake and data warehouse from time to time due to new changes implemented in a source system, wrong manual data entry, etc. To ensure data integrity in the data lake and data warehouse, where downstream analysts and business users would directly consume the data for reporting and analysis, we need to remove incorrect data from the data lake and data warehouse and reload with correct data. Therefore, a rollback and reload in data lake and data warehouse will happen in:</p><ul><li><p>data warehouse consumption (star schema) layer (snowflake)</p></li><li><p>data warehouse storage (data vault) layer (snowflake)</p></li><li><p>data lake curated layer (snowflake)</p></li><li><p>data lake acquisition layer (storage account)</p></li></ul><h2 id="DataLakeandDataWarehouseRollbackandReload-Caveat">Caveat</h2><p>There are a numerous of erroneous situations and it is impossible to have a document to cover all the bits and corners. The purpose of the documentation is to provide <strong>building blocks</strong> that can be used to deal with some common situations. It is not a manual that prescribes treatments for all situations. The appropriate treatment is the result of careful <strong>examination of cause, impact and trade-off</strong>. </p><p>Likewise it is not prudent to engineer a solution for something which may never happen or only happen once.  The <strong>principle </strong>should always be to make sure <strong>no errors go undetected</strong> (e.g. reconciliation frameworks pick them up), and then <strong>error which occur regularly </strong>are candidates to engineer a solution to <strong>automate </strong>the fixes.</p><p /><style type='text/css'>/*<![CDATA[*/
+div.rbtoc1639539663466 {padding: 0px;}
+div.rbtoc1639539663466 ul {list-style: disc;margin-left: 0px;}
+div.rbtoc1639539663466 li {margin-left: 0px;padding-left: 0px;}
+
+/*]]>*/</style><div class='toc-macro rbtoc1639539663466'>
+<ul class='toc-indentation'>
+<li><span class='TOCOutline'>1</span> <a href='#DataLakeandDataWarehouseRollbackandReload-Introduction'>Introduction</a>
+<ul class='toc-indentation'>
+<li><span class='TOCOutline'>1.1</span> <a href='#DataLakeandDataWarehouseRollbackandReload-Caveat'>Caveat</a></li>
+</ul>
+</li>
+<li><span class='TOCOutline'>2</span> <a href='#DataLakeandDataWarehouseRollbackandReload-AssumptionsandTreatments'>Assumptions and Treatments</a></li>
+<li><span class='TOCOutline'>3</span> <a href='#DataLakeandDataWarehouseRollbackandReload-Rollback'>Rollback</a>
+<ul class='toc-indentation'>
+<li><span class='TOCOutline'>3.1</span> <a href='#DataLakeandDataWarehouseRollbackandReload-Pre-requisiteforRollback'>Pre-requisite for Rollback</a></li>
+<li><span class='TOCOutline'>3.2</span> <a href='#DataLakeandDataWarehouseRollbackandReload-RollbackSequenceinDataLakeandDataWarehouse(High-level)'>Rollback Sequence in Data Lake and Data Warehouse (High-level)</a></li>
+<li><span class='TOCOutline'>3.3</span> <a href='#DataLakeandDataWarehouseRollbackandReload-RollbackProcessStep-by-StepinSnowflake(Insert&amp;Update)'>Rollback Process Step-by-Step in Snowflake (Insert &amp; Update)</a></li>
+<li><span class='TOCOutline'>3.4</span> <a href='#DataLakeandDataWarehouseRollbackandReload-RollbackProcessStep-by-StepinSnowflake(DataVault,InsertOnly)'>Rollback Process Step-by-Step in Snowflake (Data Vault, Insert Only)</a></li>
+<li><span class='TOCOutline'>3.5</span> <a href='#DataLakeandDataWarehouseRollbackandReload-RollbackProcessStep-by-StepinStorageAccount'>Rollback Process Step-by-Step in Storage Account</a></li>
+</ul>
+</li>
+<li><span class='TOCOutline'>4</span> <a href='#DataLakeandDataWarehouseRollbackandReload-Reload'>Reload</a>
+<ul class='toc-indentation'>
+<li><span class='TOCOutline'>4.1</span> <a href='#DataLakeandDataWarehouseRollbackandReload-Pre-requisiteforReload'>Pre-requisite for Reload</a></li>
+<li><span class='TOCOutline'>4.2</span> <a href='#DataLakeandDataWarehouseRollbackandReload-LoadtheNewBatchwithCorrectionforDeltaandFull'>Load the New Batch with Correction for Delta and Full</a></li>
+<li><span class='TOCOutline'>4.3</span> <a href='#DataLakeandDataWarehouseRollbackandReload-LoadtheNewBatchwithCorrectionforTransaction'>Load the New Batch with Correction for Transaction</a></li>
+</ul>
+</li>
+</ul>
+</div><h1 id="DataLakeandDataWarehouseRollbackandReload-AssumptionsandTreatments">Assumptions and Treatments</h1><p>How to handle errors in data caused by a source system depends on the <strong>type of load</strong> and <strong>how a source system provides the correct reload batch</strong>. </p><div class="table-wrap"><table data-layout="default" class="confluenceTable"><colgroup><col style="width: 71.0px;"/><col style="width: 48.0px;"/><col style="width: 200.0px;"/><col style="width: 301.0px;"/><col style="width: 140.0px;"/></colgroup><tbody><tr><th class="confluenceTh"><p /></th><th class="confluenceTh"><p><strong>Error Impact</strong></p></th><th class="confluenceTh"><p><strong>Assumptions </strong></p></th><th class="confluenceTh"><p><strong>Treatment</strong></p></th><th class="confluenceTh"><p><strong>Decision</strong></p></th></tr><tr><td rowspan="2" class="confluenceTd"><p>Delta pattern</p><p>(PEGA, Risk Console)</p></td><td class="confluenceTd"><p><span class="status-macro aui-lozenge aui-lozenge-success">SMALL</span> </p></td><td class="confluenceTd"><p>A source system includes the correct records in the new batch.</p></td><td class="confluenceTd"><p><strong>No rollback</strong>. Load the new batch with correction as usual. This treatment retains the errors associated with a subset of records within a small period of time as an batch of records with a valid to and from.</p></td><td rowspan="2" class="confluenceTd"><p>Does it matter that the bad records persist forever in between the first load and corrected load?</p><p>  This would mean ‘as-at’ analysis for the time period would always show the data</p></td></tr><tr><td class="confluenceTd"><p><span class="status-macro aui-lozenge aui-lozenge-error">LARGE</span>  </p></td><td class="confluenceTd"><p>A source system corrects the records in the bad batch and resends the batch. </p></td><td class="confluenceTd"><p><strong>Roll back</strong> to the snapshot prior to the ingestion of the bad batch. Reload the resent batch and all the subsequent batches.</p></td></tr><tr><td rowspan="2" class="confluenceTd"><p>Full pattern</p><p>(Risk Console, Client Connect)</p></td><td class="confluenceTd"><p><span class="status-macro aui-lozenge aui-lozenge-success">SMALL</span>  </p></td><td class="confluenceTd"><p>A source system correct the error in the new batch. </p></td><td class="confluenceTd"><p><strong>No rollback</strong>. Load the new batch with correction as usual.</p></td><td rowspan="2" class="confluenceTd"><p>As above does it matter if the bad data persists?</p></td></tr><tr><td class="confluenceTd"><p><span class="status-macro aui-lozenge aui-lozenge-error">LARGE</span>  </p></td><td class="confluenceTd"><p>A source system correct the error in the earliest bad batch and resends all the affected subsequent batch.</p></td><td class="confluenceTd"><p><strong>Roll back</strong> to the snapshot prior to the ingestion of the bad batch. Reload the all the resent batches.</p></td></tr><tr><td rowspan="2" class="confluenceTd"><p>Transaction pattern</p><p>(Risk Console)</p><p /></td><td class="confluenceTd"><p><span class="status-macro aui-lozenge aui-lozenge-success">SMALL</span>  </p></td><td class="confluenceTd"><p>A source system includes the correct records in the new batch.</p></td><td class="confluenceTd"><p><strong>Replace </strong>the bad records with the new records.</p></td><td rowspan="2" class="confluenceTd"><p>As above does it matter if the bad data persists?</p></td></tr><tr><td class="confluenceTd"><p><span class="status-macro aui-lozenge aui-lozenge-error">LARGE</span>  </p></td><td class="confluenceTd"><p>A source system correct the records in in the bad batch and resends the batch.</p></td><td class="confluenceTd"><p><strong>Roll back</strong> to the snapshot prior to the ingestion of the bad batch. Reload the resent batch and all the subsequent batches.</p></td></tr></tbody></table></div><p><strong><span style="color: rgb(255,86,48);">Note</span></strong>: The table provides a simplified version of the situations and treatments. However, how we actually handle the situation will be done at case by case level, e.g. if a value is incorrect, the easiest, but risky method could be manually corrected in the raw layer files and then load to the curate layer and the data warehouse. </p><h1 id="DataLakeandDataWarehouseRollbackandReload-Rollback">Rollback</h1><h2 id="DataLakeandDataWarehouseRollbackandReload-Pre-requisiteforRollback">Pre-requisite for Rollback</h2><p>We can roll back Database tables by leveraging the <a href="https://docs.snowflake.com/en/user-guide/data-time-travel.html" class="external-link" rel="nofollow"><strong>time travel function in Snowflake</strong></a>. The <strong>retention period </strong>for VMIA is currently configured as <strong>60 days</strong>, which means that we can travel back up to 60 days. Knowing when to roll back to requires the following <strong>audit fields</strong> to exist in a snowflake table:</p><ul><li><p><strong>INSERT_RUN_ID</strong>. This is a unique identifier generated by ADF used to identify a pipeline processed and orchestrated by ADF for a batch. This field will be populated when a record is first inserted. The RunId is of the sub-pipeline, not the hyper pipeline.</p></li><li><p><strong>UPDATE_RUN_ID</strong>. Same as the INSERT_RUN_ID and it will be populated when an existing record is updated by a process later, e.g. end-dated. The RunId is of the sub-pipeline.</p></li><li><p><strong>RECORD_INSERT_DATETIME</strong>. This is the timestamp when a record gets inserted into a snowflake table. It can be controlled either by an external function (e.g. azure function) (recommended for consistency) or Snowflake's internal clock.</p></li><li><p><strong>RECORD_UPDATE_DATETIME.</strong> This is the timestamp when an existing record gets updated with new information, e.g. end-dated. It can be controlled either by an external function (e.g. azure function) (recommended for consistency) or Snowflake's internal clock.</p></li><li><p><strong>FILE_PATH</strong>. This is the file path of a file within a <strong>storage account raw layer</strong>, including the container name and directory. This file path can be ready for the <strong>Delete Activity in ADF</strong> to remove a file.</p></li></ul><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence"># file path example
+raw-sdi-prd-datalake/PEGA_PROTECTED/VMIA_CSP_Work_Claims_Estimate/YEAR=2020/MONTH=11/BIX_VMIA_CSP_Work_Claims_Estimate_CaseExtract_201120_1/VMIA_CSP_Work_Claims_Estimate_CaseExtract_1.xml</pre>
+</div></div><p>For different layers, due to the various operations, not all the <strong><span class="inline-comment-marker" data-ref="f81d24a2-af14-44fe-a438-01c09cf36772">audit fields</span></strong><span class="inline-comment-marker" data-ref="f81d24a2-af14-44fe-a438-01c09cf36772"> are required for all tables</span>.</p><div class="table-wrap"><table data-layout="default" class="confluenceTable"><colgroup><col style="width: 104.0px;"/><col style="width: 88.0px;"/><col style="width: 79.0px;"/><col style="width: 88.0px;"/><col style="width: 77.0px;"/><col style="width: 110.0px;"/><col style="width: 88.0px;"/><col style="width: 126.0px;"/></colgroup><tbody><tr><th class="confluenceTh"><p /></th><th class="confluenceTh"><p><strong>Data Lake -  Curated (Time Varying) - </strong></p><p><strong>(Insert &amp; Update)</strong></p></th><th class="confluenceTh"><p><strong>Data Vault - Hub</strong></p><p><strong>(Insert Only)</strong></p></th><th class="confluenceTh"><p><strong>Data Vault - Satellite</strong></p><p><strong>(Insert &amp; Update)</strong></p></th><th class="confluenceTh"><p><strong>Data Vault - Link</strong></p><p><strong>(Insert Only &amp; update unless link satellites are introduced)</strong></p></th><th class="confluenceTh"><p><strong>Star Schema - Dimension</strong></p><p><strong>(Insert &amp; Update)</strong></p></th><th class="confluenceTh"><p><strong>Data Vault - Bridge</strong></p><p><strong>(Insert &amp; Update)</strong></p></th><th class="confluenceTh"><p><strong>Data Vault - Fact</strong></p><p><strong>(Insert &amp; Update, or Insert Only depending on fact type)</strong></p></th></tr><tr><td class="confluenceTd"><p><strong>INSERT_RUN_ID</strong></p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/></p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td></tr><tr><td class="confluenceTd"><p><strong>UPDATE_RUN_ID</strong></p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p /></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td></tr><tr><td class="confluenceTd"><p><strong>RECORD_INSERT_DATETIME</strong></p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td></tr><tr><td class="confluenceTd"><p><strong>RECORD_UPDATE_DATETIME</strong></p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p /></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td></tr><tr><td class="confluenceTd"><p><strong>FILE_PATH</strong></p></td><td class="confluenceTd"><p><img class="emoticon emoticon-tick" data-emoji-id="atlassian-check_mark" data-emoji-shortname=":check_mark:" data-emoji-fallback=":check_mark:" src="images/icons/emoticons/check.png" width="16" height="16" data-emoticon-name="tick" alt="(tick)"/>  </p></td><td class="confluenceTd"><p /></td><td class="confluenceTd"><p /></td><td class="confluenceTd"><p /></td><td class="confluenceTd"><p /></td><td class="confluenceTd"><p /></td><td class="confluenceTd"><p /></td></tr></tbody></table></div><h2 id="DataLakeandDataWarehouseRollbackandReload-RollbackSequenceinDataLakeandDataWarehouse(High-level)"><span class="inline-comment-marker" data-ref="72e3f233-15b4-4c71-9427-6ab188b7e5d4">Rollback Sequence</span> in Data Lake and Data Warehouse (High-level)</h2><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio988936581775550612">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio988936581775550612"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio988936581775550612",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=498270277&diagramName=Rollback_Sequence.svg&revision=6&width=861&height=511.5&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=498270277&displayName=Rollback_Sequence.svg&contentId=&custContentId=561676868&contentVer=6&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio988936581775550612&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1162.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"macro\":{\"outputType\":\"html_export\",\"hash\":\"9bc5f567-91a9-404d-b582-20677b0630c2\",\"id\":\"9bc5f567-91a9-404d-b582-20677b0630c2\"},\"content\":{\"type\":\"page\",\"version\":\"20\",\"id\":\"498270277\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"498270277\",\"macro.hash\":\"9bc5f567-91a9-404d-b582-20677b0630c2\",\"page.type\":\"page\",\"macro.localId\":\"\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=498270277|custContentId=561676868|lbox=1|diagramDisplayName=Rollback_Sequence.svg|contentVer=6|revision=6|baseUrl=https://vmia.atlassian.net/wiki|diagramName=Rollback_Sequence.svg|pCenter=0|width=861|links=|tbstyle=|height=511.5\",\"space.id\":\"262145\",\"diagramDisplayName\":\"Rollback_Sequence.svg\",\"diagramName\":\"Rollback_Sequence.svg\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"511.5\",\"space.key\":\"SDI\",\"user.id\":\"60c80092624d700069d68fe9\",\"content.version\":\"20\",\"page.title\":\"Data Lake and Data Warehouse Rollback and Reload\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"498270277\",\"custContentId\":\"561676868\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"6\",\"page.version\":\"20\",\"revision\":\"6\",\"user.key\":\"8a7f808a79f96b90017a0d42d78807c4\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"498270277\",\"width\":\"861\",\"macro.id\":\"9bc5f567-91a9-404d-b582-20677b0630c2\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<p>The top diagram illustrates how we can use data feed to figure out affected tables in the data lake and data warehouse. The bottom graph shows a proposed sequence of rollback we can perform on various tables. Generally, even though there are dependencies between tables when loading data in, when rolling back, tables can all be rolled out without a specific sequence as the rolling back is based on the record insert and/or insert time. However, the proposed rolling back sequence is useful as it ensures that</p><ul><li><p>a user can always reproduce the result of loading for validation purpose if needed, and</p></li><li><p>useful information doesn’t disappear before consumed (e.g., the FILE_PATH records won’t be removed until the file is removed.)</p></li></ul><h2 id="DataLakeandDataWarehouseRollbackandReload-RollbackProcessStep-by-StepinSnowflake(Insert&amp;Update)">Rollback Process Step-by-Step in Snowflake (Insert &amp; Update)</h2><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio2751861355076076581">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio2751861355076076581"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio2751861355076076581",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=498270277&diagramName=rollback_ADF.svg&revision=6&width=1605.890625&height=315&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=498270277&displayName=rollback_ADF.svg&contentId=&custContentId=558989367&contentVer=6&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio2751861355076076581&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1162.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"macro\":{\"outputType\":\"html_export\",\"hash\":\"f4e540de-a226-4678-894d-48ec63110c0f\",\"id\":\"f4e540de-a226-4678-894d-48ec63110c0f\"},\"content\":{\"type\":\"page\",\"version\":\"20\",\"id\":\"498270277\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"498270277\",\"macro.hash\":\"f4e540de-a226-4678-894d-48ec63110c0f\",\"page.type\":\"page\",\"macro.localId\":\"\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=498270277|custContentId=558989367|lbox=1|diagramDisplayName=rollback_ADF.svg|contentVer=6|revision=6|baseUrl=https://vmia.atlassian.net/wiki|diagramName=rollback_ADF.svg|pCenter=0|width=1605.890625|links=|tbstyle=|height=315\",\"space.id\":\"262145\",\"diagramDisplayName\":\"rollback_ADF.svg\",\"diagramName\":\"rollback_ADF.svg\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"315\",\"space.key\":\"SDI\",\"user.id\":\"60c80092624d700069d68fe9\",\"content.version\":\"20\",\"page.title\":\"Data Lake and Data Warehouse Rollback and Reload\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"498270277\",\"custContentId\":\"558989367\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"6\",\"page.version\":\"20\",\"revision\":\"6\",\"user.key\":\"8a7f808a79f96b90017a0d42d78807c4\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"498270277\",\"width\":\"1605.890625\",\"macro.id\":\"f4e540de-a226-4678-894d-48ec63110c0f\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<ol><li><p>Having been informed about which data feed on which day the content containing an error, a user identify the <strong>RunIds </strong>of pipelines (incl. <strong>hyper pipelines and sub-pipelines</strong> for both data lake and data warehouse load) associated to this batch from the ADF Monitor logs.<span class="inline-comment-marker" data-ref="54b3814c-baf3-4080-8517-a86a834539b4"> Use the hyper pipeline RunId to ensure all sub-pipeline RunIds are associated with one batch run</span>. This can be done in ADF Monitor by eyeballing or run Kusto query in log analytics workspace.</p></li><li><p> Identify the affected table(s) that require a rollback.</p><ol><li><p>If we’re going to roll back records in a curated table, since a data feed links to one curated table directly, can quickly <strong>identify the curated table</strong> based on the data feed name.</p></li><li><p>If we’re going to roll back records in a Data Vault table, use the affected curated table name, query the Data Vault dependency rules stored in the cosmosDB, and <strong>identify a list of Data Vault tables</strong> affected by the data feed.</p></li><li><p>If we’re going to roll back records in a star schema table (e.g. dimension, bridge, fact), use the affected data vault or curated table name(s), query the star schema dependency rules stored in the cosmosDB, and <strong>identify a list of Star Schema tables</strong> affected by the data feed.</p></li></ol></li><li><p>For each identified affected table, query the table by the <strong>RunId </strong>of the sub-pipeline and identify the <strong>earliest time among all RECORD_INSERT_DATETIME and RECORD_UPDATE_DATETIME</strong>, the number of records to delete, and the number of records to revert the update.</p></li><li><p><strong>Run Time Travel</strong> statement in snowflake to go back <strong>1 millisecond earlier</strong> than the minimum of RECORD_INSERT_DATETIME and RECORD_UPDATE_DATETIME together.</p><ol><li><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence"># example code to create a restored_table with history of a specific time from my_table 
+create table restored_table clone my_table
+  at(timestamp =&gt; &#39;Mon, 09 May 2015 01:01:00 +0300&#39;::timestamp_tz);</pre>
+</div></div></li></ol></li><li><p><strong>Validate </strong>the restored_table contains the correct records, e.g. removed expected number of records, revert the expected number of records.</p></li><li><p>If validation is successful, <strong>rename </strong>the restored_table to the original table name. This operation will replace the original table with a past snapshot and continue the evolvement of the table. Because the restoration essentially is to <strong>create a new version</strong> and load it on top of the original table, a user <strong>can still go back to history</strong> using time travel to access anything before the replacement, as long as the history is within the retention period.</p><ol><li><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence"># can use show table history to view table status change
+show tables history;</pre>
+</div></div></li></ol></li></ol><p><strong><span style="color: rgb(255,86,48);">Note</span></strong>: Rollback doesn’t depend on the pattern of load (i.e. delta, full, transaction) but only rely on the time to travel back to.</p><h2 id="DataLakeandDataWarehouseRollbackandReload-RollbackProcessStep-by-StepinSnowflake(DataVault,InsertOnly)">Rollback Process Step-by-Step in Snowflake (Data Vault, Insert Only)</h2><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio8159663105301920789">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio8159663105301920789"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio8159663105301920789",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=498270277&diagramName=DV_Insert_Only.svg&revision=3&width=1674.890625&height=317&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=498270277&displayName=DV_Insert_Only.svg&contentId=&custContentId=559219230&contentVer=3&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio8159663105301920789&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1162.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"macro\":{\"outputType\":\"html_export\",\"hash\":\"66faad95-0d61-4c82-8cfb-8cbfb4637a43\",\"id\":\"66faad95-0d61-4c82-8cfb-8cbfb4637a43\"},\"content\":{\"type\":\"page\",\"version\":\"20\",\"id\":\"498270277\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"498270277\",\"macro.hash\":\"66faad95-0d61-4c82-8cfb-8cbfb4637a43\",\"page.type\":\"page\",\"macro.localId\":\"\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=498270277|custContentId=559219230|lbox=1|diagramDisplayName=DV_Insert_Only.svg|contentVer=3|revision=3|baseUrl=https://vmia.atlassian.net/wiki|diagramName=DV_Insert_Only.svg|pCenter=0|width=1674.890625|links=|tbstyle=|height=317\",\"space.id\":\"262145\",\"diagramDisplayName\":\"DV_Insert_Only.svg\",\"diagramName\":\"DV_Insert_Only.svg\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"317\",\"space.key\":\"SDI\",\"user.id\":\"60c80092624d700069d68fe9\",\"content.version\":\"20\",\"page.title\":\"Data Lake and Data Warehouse Rollback and Reload\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"498270277\",\"custContentId\":\"559219230\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"3\",\"page.version\":\"20\",\"revision\":\"3\",\"user.key\":\"8a7f808a79f96b90017a0d42d78807c4\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"498270277\",\"width\":\"1674.890625\",\"macro.id\":\"66faad95-0d61-4c82-8cfb-8cbfb4637a43\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<ol><li><p>Having been informed about which data feed on which day the content containing an error, a user identify the <strong>RunIds </strong>of pipelines (incl. <strong>hyper pipelines and sub-pipelines</strong> for both data lake and data warehouse load) associated to this batch from the ADF Monitor logs. Use the hyper pipeline RunId to ensure all sub-pipeline RunIds are associated with one batch run.</p></li><li><p>Since a data feed links to one curated table, query the Data Vault dependency rules stored in runtime config in the cosmosDB and <strong>identify a list of Data Vault tables</strong> affected by the data feed.</p></li><li><p>If a Data Vault table has the Insert and Update operations (e.g. Satellite), refer to the <a href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/498270277/Data+Lake+and+Data+Warehouse+Rollback+and+Reload#Rollback-Process-Step-by-Step-in-Snowflake" rel="nofollow"><strong>Rollback Process in Snowflake (Insert &amp; Update)</strong></a> section. For Insert Only tables (e.g. Hub and Link), query the table by the <strong>RunId </strong>of the Data Vault pipeline and identify the <strong>earliest time among all RECORD_INSERT_DATETIME</strong>, and the number of records to delete.</p></li><li><p><strong>Run Time Travel</strong> statement in snowflake to go back <strong>1 millisecond earlier</strong> than the minimum of RECORD_INSERT_DATETIME.</p></li><li><p><strong>Validate </strong>the restored_table contains the correct records, e.g. removed expected number of records.</p></li><li><p>If validation is successful, <strong>rename </strong>the restored_table to the original table name. This operation will replace the original table </p></li></ol><h2 id="DataLakeandDataWarehouseRollbackandReload-RollbackProcessStep-by-StepinStorageAccount">Rollback Process Step-by-Step in Storage Account</h2><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio4708603027345017706">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio4708603027345017706"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio4708603027345017706",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=498270277&diagramName=rollback_storage_account.svg&revision=3&width=956&height=305&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=498270277&displayName=rollback_storage_account.svg&contentId=&custContentId=559153409&contentVer=3&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio4708603027345017706&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1162.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"macro\":{\"outputType\":\"html_export\",\"hash\":\"6eca8665-6a22-460f-9689-c846b98f1791\",\"id\":\"6eca8665-6a22-460f-9689-c846b98f1791\"},\"content\":{\"type\":\"page\",\"version\":\"20\",\"id\":\"498270277\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"498270277\",\"macro.hash\":\"6eca8665-6a22-460f-9689-c846b98f1791\",\"page.type\":\"page\",\"macro.localId\":\"\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=498270277|custContentId=559153409|lbox=1|diagramDisplayName=rollback_storage_account.svg|contentVer=3|revision=3|baseUrl=https://vmia.atlassian.net/wiki|diagramName=rollback_storage_account.svg|pCenter=0|width=956|links=|tbstyle=|height=305\",\"space.id\":\"262145\",\"diagramDisplayName\":\"rollback_storage_account.svg\",\"diagramName\":\"rollback_storage_account.svg\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"305\",\"space.key\":\"SDI\",\"user.id\":\"60c80092624d700069d68fe9\",\"content.version\":\"20\",\"page.title\":\"Data Lake and Data Warehouse Rollback and Reload\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"498270277\",\"custContentId\":\"559153409\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"3\",\"page.version\":\"20\",\"revision\":\"3\",\"user.key\":\"8a7f808a79f96b90017a0d42d78807c4\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"498270277\",\"width\":\"956\",\"macro.id\":\"6eca8665-6a22-460f-9689-c846b98f1791\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<ol><li><p>Having been informed about which data feed on which day the content containing an error, a user identify the <strong>RunIds </strong>of pipelines (incl. <strong>hyper pipelines and sub-pipelines</strong> for both data lake and data warehouse load) associated to this batch from the ADF Monitor logs. Use the hyper pipeline RunId to ensure all sub-pipeline RunIds are associated with one batch run.</p></li><li><p>Since a data feed links to one curated table, query the curated table by the <strong>RunId </strong>of the curated pipeline and identify the <strong>FILE_PATH</strong>.</p></li><li><p><strong>Locate </strong>the file in the raw layer in the storage account, <strong>confirm </strong>it is the right file, and <strong>move </strong>it to a DELETED container with an appropriate lifetime management policy. Moving the file rather than delete immediately is for any further investigation.</p></li></ol><h1 id="DataLakeandDataWarehouseRollbackandReload-Reload">Reload</h1><h2 id="DataLakeandDataWarehouseRollbackandReload-Pre-requisiteforReload">Pre-requisite for Reload</h2><p>Columns needed to support reload.</p><ul><li><p><strong><span class="inline-comment-marker" data-ref="301c1df9-3e91-4b2f-9a07-58966c1c3475"><span class="inline-comment-marker" data-ref="b43a934c-7ab0-454b-a563-a7b48a262ab1">RECORD_UPDATE</span></span></strong><span class="inline-comment-marker" data-ref="301c1df9-3e91-4b2f-9a07-58966c1c3475">. This is the timestamp to reflect the time the records are last updated from a source system. It reflects that the records are valid as at time. It is critical when we process data from the supposed past windows during backfill and reload. If this field doesn’t exist in the data, we default to use the expected pipeline start time. </span><strong><span style="color: rgb(255,86,48);"><span class="inline-comment-marker" data-ref="301c1df9-3e91-4b2f-9a07-58966c1c3475">Note</span></span></strong><span class="inline-comment-marker" data-ref="301c1df9-3e91-4b2f-9a07-58966c1c3475">: some tables contain this field in the data.</span></p></li></ul><h2 id="DataLakeandDataWarehouseRollbackandReload-LoadtheNewBatchwithCorrectionforDeltaandFull">Load the New Batch with Correction for Delta and Full</h2><p>Audit columns needed (See the description in the <a data-card-appearance="inline" href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/498270277/Data+Lake+and+Data+Warehouse+Rollback+and+Reload#Pre-requisite-for-Rollback" rel="nofollow">https://vmia.atlassian.net/wiki/spaces/SDI/pages/498270277/Data+Lake+and+Data+Warehouse+Rollback+and+Reload#Pre-requisite-for-Rollback</a>):</p><ul><li><p><strong>INSERT_RUN_ID</strong></p></li><li><p><strong>UPDATE_RUN_ID</strong></p></li><li><p><strong>RECORD_INSERT_DATETIME</strong></p></li><li><p><strong>RECORD_UPDATE_DATETIME </strong></p></li></ul><p>Load as per usual - loading the current batch from adding the new file in the raw layer of the storage account, to loading data in all the affected tables in Snowflake. </p><ol><li><p>based on the primary key, identify a record is a new or existing</p><ol><li><p> if new,</p><ol><li><p>insert the record with the current INSERT_RUN_ID and RECORD_INSERT_DATETIME. UPDATE. UPDATE_RUN_ID and RECORD_UPDATE_DATETIME are NULL if applicable.</p></li></ol></li><li><p>if existing (for Insert and Update tables),</p><ol><li><p>identify if any attribute has updates based on the hash value of all attributes.</p><ol><li><p>if has update, </p><ol><li><p>insert the records with the current INSERT_RUN_ID and RECORD_INSERT_DATETIME. UPDATE. UPDATE_RUN_ID and RECORD_UPDATE_DATETIME are NULL.</p></li><li><p>end date the existing record and fill UPDATE_RUN_ID and RECORD_UPDATE_DATETIME with the current RunId and timestamp.</p></li></ol></li><li><p>if no update, </p><ol><li><p>do nothing.</p></li></ol></li></ol></li></ol></li></ol></li></ol><h2 id="DataLakeandDataWarehouseRollbackandReload-LoadtheNewBatchwithCorrectionforTransaction">Load the New Batch with Correction for Transaction</h2><p>Audit columns needed (See the description in the <a data-card-appearance="inline" href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/498270277/Data+Lake+and+Data+Warehouse+Rollback+and+Reload#Pre-requisite-for-Rollback" rel="nofollow">https://vmia.atlassian.net/wiki/spaces/SDI/pages/498270277/Data+Lake+and+Data+Warehouse+Rollback+and+Reload#Pre-requisite-for-Rollback</a>):</p><ul><li><p><strong>INSERT_RUN_ID</strong></p></li><li><p><strong>RECORD_INSERT_DATETIME</strong></p></li></ul><p>As for transaction data, each record has a transaction ID uniquely identifying a transaction. When some erroneous attributes get corrected in the new batch, based on the transaction ID, the reload process should be:</p><ol><li><p>based on the transaction ID, identify if a record is a new or existing</p><ol><li><p>if new, </p><ol><li><p>insert the record with the current INSERT_RUN_ID and RECORD_INSERT_DATETIME.</p></li></ol></li><li><p>if existing, </p><ol><li><p>if apply delta load method</p><ol><li><p>insert the records with the current INSERT_RUN_ID and RECORD_INSERT_DATETIME. UPDATE. UPDATE_RUN_ID and RECORD_UPDATE_DATETIME are NULL.</p></li><li><p>end date the existing record and fill UPDATE_RUN_ID and RECORD_UPDATE_DATETIME with the current RunId and timestamp.</p></li></ol></li><li><p>if apply transaction load method</p><ol><li><p>delete the bad record, and</p></li><li><p>insert the record with the current INSERT_RUN_ID and RECORD_INSERT_DATETIME. </p></li></ol></li></ol></li></ol></li></ol><p /><p /><p /><p />
+                    </div>
+
+                                        <div class="pageSection group">
+                        <div class="pageSectionHeader">
+                            <h2 id="attachments" class="pageSectionTitle">Attachments:</h2>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/505741313.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Untitled Diagram.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/505774081.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Untitled Diagram.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/505741322.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Untitled Diagram.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/505806849.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Untitled Diagram.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/505708545.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Untitled Diagram.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559349784.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/556138684.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559284243.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/556138693.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/556171483.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559218714.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559153188.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559054872.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559218723.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559251467.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561545237.svg">rollback_ADF.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559317117.png">rollback_ADF.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561774717.svg">rollback_ADF.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561840211.png">rollback_ADF.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559153593.svg">rollback_ADF.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561709374.png">rollback_ADF.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561610894.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561742006.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561742015.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561610903.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559153395.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561545402.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561610912.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561545397.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559153425.svg">rollback_storage_account.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561807577.png">rollback_storage_account.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561611200.svg">rollback_storage_account.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561742251.png">rollback_storage_account.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561709521.svg">rollback_ADF.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559055487.png">rollback_ADF.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561611172.tmp">~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561611182.tmp">~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561545665.tmp">~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561840475.tmp">~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561709434.tmp">~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561840489.tmp">~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561807820.tmp">~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561545687.tmp">~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561676692.tmp">~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559218947.tmp">~rollback_storage_account.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559153404.svg">rollback_storage_account.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561709223.png">rollback_storage_account.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559219221.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DV_Insert_Only.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561709456.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DV_Insert_Only.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561774917.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DV_Insert_Only.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559055526.svg">DV_Insert_Only.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561709585.png">DV_Insert_Only.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561807916.tmp">~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559219315.tmp">~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561840547.tmp">~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561676782.tmp">~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561774989.tmp">~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561709503.tmp">~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561840561.tmp">~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561840571.tmp">~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559055477.tmp">~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561676304.tmp">~rollback_ADF.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/574849286.svg">rollback_ADF.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/567116247.png">rollback_ADF.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561840606.tmp">~DV_Insert_Only.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561545795.tmp">~DV_Insert_Only.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559219351.tmp">~DV_Insert_Only.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561676824.tmp">~DV_Insert_Only.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561709563.tmp">~DV_Insert_Only.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561709572.tmp">~DV_Insert_Only.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561840619.tmp">~DV_Insert_Only.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561742331.tmp">~DV_Insert_Only.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561545816.tmp">~DV_Insert_Only.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559219329.tmp">~DV_Insert_Only.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/574882065.svg">DV_Insert_Only.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/567116261.png">DV_Insert_Only.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561808020.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561742402.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561840715.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561775064.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561676859.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561545910.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559153833.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561808029.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561742413.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561840636.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559055580.svg">Rollback_Sequence.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559317637.png">Rollback_Sequence.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/564887589.svg">Rollback_Sequence.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/564527194.png">Rollback_Sequence.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/564592794.svg">Rollback_Sequence.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/564494476.png">Rollback_Sequence.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/564527364.svg">Rollback_Sequence.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/564560088.png">Rollback_Sequence.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/564396241.tmp">~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/564592836.tmp">~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/564461773.tmp">~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/564887729.tmp">~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/564396259.tmp">~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/564396269.svg">Rollback_Sequence.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/564363420.png">Rollback_Sequence.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/564592850.tmp">~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/564428954.tmp">~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/564560102.tmp">~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/564887743.tmp">~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561840732.tmp">~Rollback_Sequence.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561742421.svg">Rollback_Sequence.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561709639.png">Rollback_Sequence.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/556105907.svg">rollback_ADF.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559218732.png">rollback_ADF.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/561774922.svg">DV_Insert_Only.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/498270277/559153665.png">DV_Insert_Only.svg.png</a> (image/png)
+                                <br/>
+                                                    </div>
+                    </div>
+                    
+                                                      
+                </div>             </div> 
+            <div id="footer" role="contentinfo">
+                <section class="footer-body">
+                    <p>Document generated by Confluence on Dec 15, 2021 03:41</p>
+                    <div id="footer-logo"><a href="http://www.atlassian.com/">Atlassian</a></div>
+                </section>
+            </div>
+        </div>     </body>
+</html>

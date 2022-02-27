@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SDI : Data Lab</title>
+        <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body class="theme-default aui-theme-default">
+        <div id="page">
+            <div id="main" class="aui-page-panel">
+                <div id="main-header">
+                    <div id="breadcrumb-section">
+                        <ol id="breadcrumbs">
+                            <li class="first">
+                                <span><a href="index.html">SDI</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="Ingestion-Pipelines_1327628295.html">Ingestion Pipelines</a></span>
+                            </li>
+                                                </ol>
+                    </div>
+                    <h1 id="title-heading" class="pagetitle">
+                                                <span id="title-text">
+                            SDI : Data Lab
+                        </span>
+                    </h1>
+                </div>
+
+                <div id="content" class="view">
+                    <div class="page-metadata">
+                        
+        
+    
+        
+    
+        
+        
+            Created by <span class='author'> Rahul Pandey</span>, last modified on Jul 28, 2021
+                        </div>
+                    <div id="main-content" class="wiki-content group">
+                    <p>Data lab is an exploratory space/environment created for Insights team’s analysts / developers to -</p><ul><li><p>Explore new data sets to create / test new insights use cases/ideas</p></li><li><p>experiment / analyse existing / new data sets</p></li><li><p>other insights related work</p></li></ul><h1 id="DataLab-Assumptions-">Assumptions - </h1><p>All files/API within one ingestion pattern have the same schema structure</p><h1 id="DataLab-Scope-">Scope - </h1><p>There are 2 ingestion patterns introduced - </p><ol><li><p>Geojson Files from network drive &amp; </p></li><li><p>APIs - 2 types of API loads</p><ol><li><p>Token Authorization - This is for the zoom meeting data that needs authentication</p></li><li><p>No Authorization - Geospatial API data that does not need Authorization as it is publicly available</p></li></ol></li></ol><h1 id="DataLab-InitialSetup-">Initial Setup - </h1><p>A new user is configured by a request to the data engineer. This setup will create a user specific DATALAB schema (DATALAB_&lt;user initials&gt;) on the Snowflake SDI_&lt;ENV&gt;_CURATED_DB. Here the user will have read access on the data from all other schemas (&lt;SOURCESYSTEM&gt;_&lt;CLASSIFICATION&gt; ex: PEGA_PROTECTED) and write access to this new Datalab schema.</p><p>New storage integration created between azure and snowflake for for file to DB copy</p><p>Linked services are configured for specific data sources (network drives/API URLs)</p><p>RBAC is setup, New security group in azure and role on Snowflake is created for specific user access</p><p>The user can then access Azure Data factory to execute the required hyper pipelines to ingest new data as per the need/use case.</p><p>Based on the ingestion patterns mentioned above, 2 new hyper pipelines are created - </p><ol><li><p>datalabHyperPipeline</p></li><li><p>datalabApiHyperPipeline </p></li></ol><h2 id="DataLab-TechnicalDesign-HyperPipeline">Technical Design - Hyper Pipeline</h2><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio7400380567878607422">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio7400380567878607422"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio7400380567878607422",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=981106699&diagramName=High+Level+Design&revision=6&width=861&height=455&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=981106699&displayName=High+Level+Design&contentId=&custContentId=981237828&contentVer=6&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio7400380567878607422&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1213.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"editor\":{\"version\":\"\\\"v2\\\"\"},\"macro\":{\"outputType\":\"html_export\",\"hash\":\"b309c186-8afe-4f3d-ad7b-5e578fe642a9\",\"id\":\"b309c186-8afe-4f3d-ad7b-5e578fe642a9\"},\"content\":{\"type\":\"page\",\"version\":\"11\",\"id\":\"981106699\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"981106699\",\"macro.hash\":\"b309c186-8afe-4f3d-ad7b-5e578fe642a9\",\"page.type\":\"page\",\"macro.localId\":\"8bf7c31d-e9b5-47e0-8f66-5f984bf1f2d7\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=981106699|custContentId=981237828|lbox=1|diagramDisplayName=High Level Design|contentVer=6|revision=6|baseUrl=https://vmia.atlassian.net/wiki|diagramName=High Level Design|pCenter=0|width=861|links=|tbstyle=|height=455\",\"space.id\":\"262145\",\"diagramDisplayName\":\"High Level Design\",\"diagramName\":\"High Level Design\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"455\",\"space.key\":\"SDI\",\"user.id\":\"5ecf250a4824b20c182c6999\",\"content.version\":\"11\",\"page.title\":\"Data Lab\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"981106699\",\"custContentId\":\"981237828\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"6\",\"page.version\":\"11\",\"revision\":\"6\",\"user.key\":\"8a7f80897281861b017282ee78850105\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"981106699\",\"width\":\"861\",\"macro.id\":\"b309c186-8afe-4f3d-ad7b-5e578fe642a9\",\"editor.version\":\"\\\"v2\\\"\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<h2 id="DataLab-Stepdetails-">Step details - </h2><p>parameter parser parses through the input provide for the hyper pipeline. This is further used throughout the  pipeline as parameters.</p><ol><li><p>In acquisition layer, check for token value in parameters and if provided, triggers the copy activity of zoom API, else geospatial API. The linked service/dataset connects to the network drive (API URL, in case of API hyper pipeline) to fetch the file (data and create a json file, in case of API hyper pipeline) and places it in the landing container of the data lake</p></li><li><p>In Structured layer, the following steps are performed -</p><ol><li><p>Azure function copy_snowflake_datalab is triggered. This function reads file from LANDING container and strips the outer elements of the json file to only capture the array of actual values. This is done to catered for the json files which are bigger than the max threshold of column size that snowflake can handle (16 MB). (All the files are stripped outer element through snowflake configuration and also within the Azure function to help with the load of bigger json files)</p></li><li><p>This new data set is written with the same file name into the RAW container.</p></li><li><p>The RAW file is then copied over through the Azure Storage Integration into SDI_&lt;ENV&gt;_CURATED_DB.DATALAB_&lt;initials&gt; in a RAWJSON_&lt;table name&gt;.</p></li><li><p><del>Schema structure is provided to this data in RAWJSON_&lt;table name&gt;, through predefined schema based on each load type within the function (to have governance) and the data is loaded into the final table for analysis purposes.</del></p></li></ol></li></ol><h3 id="DataLab-OperationalInformation(Notes)">Operational Information (Notes)</h3><ul><li><p>To be able to give access to user to data in the CURATED layer, we skip the structured database and copy the Datalab data directly into the CURATED database, else we might need to establish a zero copy cloning for data between structured and curated DBs.</p></li><li><p>Data lab schema is transient, every execution creates/replaces the table (Drops and creates again)<br/>The structure of all files for each file type is consistent and hence the schema is maintained within the python function that loads from Azure Data Lake to snowflake DATALAB schema. If the structures tend to change, or a new file type is introduced, It would need change in the function or might be configured (based on the use case). Reason of this is to maintain governance.</p></li><li><p>Constraint - Every linked service and dataset needs a base and relative URL and so every time a new API is to be extracted which is from a different URL space, new linked service and dataset needs to be created, hyper pipeline might also need to be customised. Example - 2 new linked service and data sets are configured in data factory to extract 2 APIs currently requested. (zoom URL and Geospatial ArcGIS data)</p></li><li><p>DDL/DML scripts executed and kept in the DATALAB_&lt;initials&gt; schema needs to be version controlled in Bitbucket as scheduled clean-up might result in removal of these scripts.</p></li><li><p>This solution is not meant/equipped for anything except exploratory data analysis / experimental use case by the Insights analysts.</p></li></ul>
+                    </div>
+
+                                        <div class="pageSection group">
+                        <div class="pageSectionHeader">
+                            <h2 id="attachments" class="pageSectionTitle">Attachments:</h2>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/982220850.tmp">~drawio~5f97265e44658b00710f438d~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/981893241.tmp">~drawio~5f97265e44658b00710f438d~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/982220859.tmp">~drawio~5f97265e44658b00710f438d~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/981532732.tmp">~drawio~5f97265e44658b00710f438d~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/982220868.tmp">~drawio~5f97265e44658b00710f438d~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/981532741.tmp">~drawio~5f97265e44658b00710f438d~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/981532750.tmp">~drawio~5f97265e44658b00710f438d~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/981237819.tmp">~drawio~5f97265e44658b00710f438d~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/982220877.tmp">~drawio~5f97265e44658b00710f438d~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/982155350.tmp">~drawio~5f97265e44658b00710f438d~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/982220925">High Level Design</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/982220935.png">High Level Design.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/981139476.tmp">~drawio~5f97265e44658b00710f438d~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/991002697">High Level Design</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/990576728.png">High Level Design.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/1153597443">High Level Design</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/1153302560.png">High Level Design.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/1154154601">High Level Design</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/1154056299.png">High Level Design.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/1153761354.tmp">~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/1153466463.tmp">~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/1153761364.tmp">~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/1153597519.tmp">~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/1153597529.tmp">~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/1153237091.tmp">~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/1153466473.tmp">~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/1154121769.tmp">~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/1155465337.tmp">~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/1155432693">High Level Design</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/1155530864.png">High Level Design.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/981237845.tmp">~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/982155345">High Level Design</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/981106699/981237831.png">High Level Design.png</a> (image/png)
+                                <br/>
+                                                    </div>
+                    </div>
+                    
+                                                      
+                </div>             </div> 
+            <div id="footer" role="contentinfo">
+                <section class="footer-body">
+                    <p>Document generated by Confluence on Feb 24, 2022 03:31</p>
+                    <div id="footer-logo"><a href="http://www.atlassian.com/">Atlassian</a></div>
+                </section>
+            </div>
+        </div>     </body>
+</html>

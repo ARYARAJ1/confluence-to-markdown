@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SDI : Metadata Management</title>
+        <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body class="theme-default aui-theme-default">
+        <div id="page">
+            <div id="main" class="aui-page-panel">
+                <div id="main-header">
+                    <div id="breadcrumb-section">
+                        <ol id="breadcrumbs">
+                            <li class="first">
+                                <span><a href="index.html">SDI</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="Ingestion-Pipelines_1327628295.html">Ingestion Pipelines</a></span>
+                            </li>
+                                                </ol>
+                    </div>
+                    <h1 id="title-heading" class="pagetitle">
+                                                <span id="title-text">
+                            SDI : Metadata Management
+                        </span>
+                    </h1>
+                </div>
+
+                <div id="content" class="view">
+                    <div class="page-metadata">
+                        
+        
+    
+        
+    
+        
+        
+            Created by <span class='author'> Rahul Pandey</span>, last modified on Sep 16, 2021
+                        </div>
+                    <div id="main-content" class="wiki-content group">
+                    <div class="contentLayout2">
+<div class="columnLayout fixed-width" data-layout="fixed-width">
+<div class="cell normal" data-type="normal">
+<div class="innerCell">
+<h2 id="MetadataManagement-Introduction">Introduction </h2><p>This design is to cater for ad-hoc metadata load and management. This metadata could be business related or reference data/information used to help standardised/ conform data in the SDI data warehouse and Data marts.</p><p>This load can be designed on a low frequency load schedule (Monthly/quarterly) combined with on need basis triggers.</p><p /></div>
+</div>
+</div>
+<div class="columnLayout two-equal" data-layout="two-equal">
+<div class="cell normal" data-type="normal">
+<div class="innerCell">
+<h3 id="MetadataManagement-Option1-RCXLSXpipereusability">Option 1 - RC XLSX pipe reusability</h3><ul><li><p>existing pattern XLSX/csv to parquet -&gt; Snowflake</p></li><li><p>Not many changes required, same RC hyper pipe</p></li></ul></div>
+</div>
+<div class="cell normal" data-type="normal">
+<div class="innerCell">
+<h3 id="MetadataManagement-Option2-NewHyperPipe">Option 2 - New Hyper Pipe</h3><ul><li><p>Existing RC pipes loads into SF curated, not needed Metadata can go directly into modelled</p></li><li><p>parquet is complex, not required, might have troubleshooting bottlenecks.</p></li><li><p>RC, IDR and CC (parquet pattern), all obsolete after 4-5 months</p></li></ul></div>
+</div>
+</div>
+<div class="columnLayout fixed-width" data-layout="fixed-width">
+<div class="cell normal" data-type="normal">
+<div class="innerCell">
+<h3 id="MetadataManagement-ProposedSolution-">Proposed Solution -</h3><ul><li><p>Mirror Risk Console XLSX  ingestion hyper pipeline</p></li><li><p>Remove unnecessary steps</p></li><li><p>Modify TDQ to work on csv files</p></li></ul><h2 id="MetadataManagement-HighLevelDesign">High Level Design</h2><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio-sketch4081792586775646763">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio-sketch4081792586775646763"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio-sketch4081792586775646763",
+    "key":"drawio-sketch",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=1178763363&diagramName=High+Level+Design&revision=1&width=1244.9999999999995&height=360.9999999999999&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=1178763363&displayName=High+Level+Design&contentId=&custContentId=1177649303&contentVer=1&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&sketch=1&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio-sketch4081792586775646763&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1213.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"editor\":{\"version\":\"\\\"v2\\\"\"},\"macro\":{\"outputType\":\"html_export\",\"hash\":\"b8d57aae-09ec-4754-8c15-74d892be596e\",\"id\":\"b8d57aae-09ec-4754-8c15-74d892be596e\"},\"content\":{\"type\":\"page\",\"version\":\"3\",\"id\":\"1178763363\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"1178763363\",\"macro.hash\":\"b8d57aae-09ec-4754-8c15-74d892be596e\",\"page.type\":\"page\",\"macro.localId\":\"b5738df0-7c1b-41b7-a256-6ae3d7e6c635\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=1178763363|custContentId=1177649303|lbox=1|diagramDisplayName=High Level Design|contentVer=1|revision=1|baseUrl=https://vmia.atlassian.net/wiki|diagramName=High Level Design|pCenter=0|width=1244.9999999999995|links=|tbstyle=|height=360.9999999999999\",\"space.id\":\"262145\",\"diagramDisplayName\":\"High Level Design\",\"diagramName\":\"High Level Design\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"360.9999999999999\",\"space.key\":\"SDI\",\"user.id\":\"5ecf250a4824b20c182c6999\",\"content.version\":\"3\",\"page.title\":\"Metadata Management\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"1178763363\",\"custContentId\":\"1177649303\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"1\",\"page.version\":\"3\",\"revision\":\"1\",\"user.key\":\"8a7f80897281861b017282ee78850105\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"1178763363\",\"width\":\"1244.9999999999995\",\"macro.id\":\"b8d57aae-09ec-4754-8c15-74d892be596e\",\"editor.version\":\"\\\"v2\\\"\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<p /><p>The above is high level design of the Hyper Pipeline for the metadata management. It would entail of the below steps - </p><ul><li><p>XLSX files to be fetched from K drive. Filename to be consistent with the entity being loaded.</p></li><li><p>The table/structure to be created as part of the load would be gathered and maintained as configuration information in the COSMOS DB. Table/Entity name same as Filename</p></li><li><p>The file will be fetched in the Azure data lake landing container in a blob storage folder (same as filename).</p></li><li><p>File gets fetched from landing container, converted to CSV and is placed in raw container with timestamped folder structure (refer Risk console XLSX load). </p></li><li><p>Perform basic Tech Data Quality checks on the file.</p><ul><li><p>TDQ will be obsolete with the legacy source systems. </p></li><li><p>Tech Data Quality will need to be modified to handle CSV validations and load the data into Snowflake DB and schema as per configuration (currently, it is hardcoded to load into structured and curated DB. Need to change that to include DWH DB). </p></li><li><p>We will copy and make a new version of TDQ to use in Metadata pipelines, existing TDQ will keep being used in non Pega pipelines and will be decommissioned when the legacy non Pega systems seize to exist. This allows us to skip regression testing the impact of the TDQ changes on existing PROD pipes.</p></li><li><p>It should load from Azure Data Lake → Snowflake Stage → Transient table (Structured DB or staging schema in DWH DB)</p></li></ul></li><li><p>Type 2 SCD performed on the data and loaded in the final Modelled schema. Generic SCD stored procedure can be used for this.</p></li></ul><h2 id="MetadataManagement-OperationalInfo">Operational Info</h2><ul><li><p>Files to be placed in K drive - SDI_prd.</p></li><li><p>Scheduled triggers would be made for more frequently changing files, else the ingestion would be manually triggered, on need/request basis.</p></li><li><p>File related issues would be conveyed to the source of the file for fixture. More relevant error handling would evolve into the TDQ function in future as per the need.  </p></li></ul></div>
+</div>
+</div>
+</div>
+                    </div>
+
+                                        <div class="pageSection group">
+                        <div class="pageSectionHeader">
+                            <h2 id="attachments" class="pageSectionTitle">Attachments:</h2>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1178763363/1178632310">High Level Design</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1178763363/1179025506.png">High Level Design.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1178763363/1178632355.tmp">~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1178763363/1178632350.tmp">~High Level Design.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                    </div>
+                    </div>
+                    
+                                                      
+                </div>             </div> 
+            <div id="footer" role="contentinfo">
+                <section class="footer-body">
+                    <p>Document generated by Confluence on Feb 24, 2022 03:31</p>
+                    <div id="footer-logo"><a href="http://www.atlassian.com/">Atlassian</a></div>
+                </section>
+            </div>
+        </div>     </body>
+</html>

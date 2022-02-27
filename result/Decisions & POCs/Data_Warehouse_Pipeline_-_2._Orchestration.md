@@ -278,7 +278,7 @@ Kafka</a>, but not an event emitter.
 
 To decide which option is most suitable, it depends on the what tool can
 support required activities. Based on the outcome of
-<a href="Data_Warehouse_Pipeline_-_1._Execute_Snowflake_Query.md"
+<a href="Data_Warehouse_Pipeline_-_1._Execute_Snowflake_Query"
 data-linked-resource-id="440271104" data-linked-resource-version="32"
 data-linked-resource-type="page">Data Warehouse Pipeline - 1. Execute
 Snowflake Query</a>, **ADF lookup activity triggers the execution of a

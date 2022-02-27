@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SDI : ADF Hyper Pipeline - DB Pull (Client Connect/IDR2)</title>
+        <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body class="theme-default aui-theme-default">
+        <div id="page">
+            <div id="main" class="aui-page-panel">
+                <div id="main-header">
+                    <div id="breadcrumb-section">
+                        <ol id="breadcrumbs">
+                            <li class="first">
+                                <span><a href="index.html">SDI</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="Ingestion-Pipelines_1327628295.html">Ingestion Pipelines</a></span>
+                            </li>
+                                                </ol>
+                    </div>
+                    <h1 id="title-heading" class="pagetitle">
+                                                <span id="title-text">
+                            SDI : ADF Hyper Pipeline - DB Pull (Client Connect/IDR2)
+                        </span>
+                    </h1>
+                </div>
+
+                <div id="content" class="view">
+                    <div class="page-metadata">
+                        
+        
+    
+        
+    
+        
+        
+            Created by <span class='author'> Sarah Fan (Deactivated)</span>, last modified by <span class='editor'> Jason Dang</span> on Mar 01, 2021
+                        </div>
+                    <div id="main-content" class="wiki-content group">
+                    <p>This section contains the build summary of ADF Hyper Pipeline for Client Connect. </p><p>At a high level, both ADF Hyper Pipeline and sub-pipeline (Acquisition, Structured and Curated) will be provisioned via <code>pulumi </code>and ARM template. The pipeline will constrains the pre-defined connections, activities, datasets and <strong>placeholders</strong> for <strong>runtime parameters.</strong> </p><p /><style type='text/css'>/*<![CDATA[*/
+div.rbtoc1645673422619 {padding: 0px;}
+div.rbtoc1645673422619 ul {list-style: disc;margin-left: 0px;}
+div.rbtoc1645673422619 li {margin-left: 0px;padding-left: 0px;}
+
+/*]]>*/</style><div class='toc-macro rbtoc1645673422619'>
+<ul class='toc-indentation'>
+<li><span class='TOCOutline'>1</span> <a href='#ADFHyperPipeline-DBPull(ClientConnect/IDR2)-HyperPipelineDesign'>Hyper Pipeline Design</a>
+<ul class='toc-indentation'>
+<li><span class='TOCOutline'>1.1</span> <a href='#ADFHyperPipeline-DBPull(ClientConnect/IDR2)-Triggerworkflowdescription:'>Trigger workflow description:</a></li>
+<li><span class='TOCOutline'>1.2</span> <a href='#ADFHyperPipeline-DBPull(ClientConnect/IDR2)-PipelineWorkflowdescription:'>Pipeline Workflow description:</a></li>
+</ul>
+</li>
+<li><span class='TOCOutline'>2</span> <a href='#ADFHyperPipeline-DBPull(ClientConnect/IDR2)-CheckpointParameterandDecisionRules'>Checkpoint Parameter and Decision Rules</a></li>
+</ul>
+</div><h1 id="ADFHyperPipeline-DBPull(ClientConnect/IDR2)-HyperPipelineDesign">Hyper Pipeline Design</h1><p>Below is a diagram to illustrate the activ<span class="inline-comment-marker" data-ref="648c51d8-6b49-446c-8697-3610bb119a5e">ities and functions that has been scheduled in the pipeline. </span></p><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio318278795770804198">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio318278795770804198"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio318278795770804198",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=437190686&diagramName=hyperpipeline_Diagram.drawio&revision=6&width=2113.5&height=833&tbstyle=&simple=0&lbox=1&zoom=0.7&links=&owningPageId=437190686&displayName=hyperpipeline_Diagram.drawio&contentId=&custContentId=440238120&contentVer=5&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio318278795770804198&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1213.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"editor\":{\"version\":\"\\\"v2\\\"\"},\"macro\":{\"outputType\":\"html_export\",\"hash\":\"7c206524-500e-4040-8814-e4a75a455b12\",\"id\":\"7c206524-500e-4040-8814-e4a75a455b12\"},\"content\":{\"type\":\"page\",\"version\":\"10\",\"id\":\"437190686\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"437190686\",\"macro.hash\":\"7c206524-500e-4040-8814-e4a75a455b12\",\"page.type\":\"page\",\"macro.localId\":\"\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=0.7|simple=0|inComment=0|pageId=437190686|custContentId=440238120|lbox=1|diagramDisplayName=hyperpipeline_Diagram.drawio|contentVer=5|revision=6|baseUrl=https://vmia.atlassian.net/wiki|diagramName=hyperpipeline_Diagram.drawio|pCenter=0|width=2113.5|links=|tbstyle=|height=833\",\"space.id\":\"262145\",\"diagramDisplayName\":\"hyperpipeline_Diagram.drawio\",\"diagramName\":\"hyperpipeline_Diagram.drawio\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"833\",\"space.key\":\"SDI\",\"user.id\":\"5ecf250a4824b20c182c6999\",\"content.version\":\"10\",\"page.title\":\"ADF Hyper Pipeline - DB Pull (Client Connect/IDR2)\",\"zoom\":\"0.7\",\"macro.body\":\"\",\"pageId\":\"437190686\",\"custContentId\":\"440238120\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"5\",\"page.version\":\"10\",\"revision\":\"6\",\"user.key\":\"8a7f80897281861b017282ee78850105\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"437190686\",\"width\":\"2113.5\",\"macro.id\":\"7c206524-500e-4040-8814-e4a75a455b12\",\"editor.version\":\"\\\"v2\\\"\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<h3 id="ADFHyperPipeline-DBPull(ClientConnect/IDR2)-Triggerworkflowdescription:"><strong>Trigger workflow description:</strong></h3><p><strong>1.</strong>A trigger will be waken up at the scheduled time, query Run-time config from the cosmosDB, and pass in the corresponding global parameters to the pipeline. All triggers have been created based on the build-time config during the deployment phase.</p><p><strong>2. </strong>The trigger triggers the hyper pipeline<strong> </strong>with prepared parameter values. </p><h3 id="ADFHyperPipeline-DBPull(ClientConnect/IDR2)-PipelineWorkflowdescription:"><strong>Pipeline Workflow description:</strong></h3><p><strong>1a.</strong> A parameter parsing function will be triggered, consume the trigger parameters and create the required parameters for consumption of the daily file.</p><p><strong>1b.</strong> A linked service from ADF enables ADF to access Client Connect SQL server and perform a full load.</p><p><strong>1c. </strong>Via a COPY activity, grab all records and columns using SELECT * from a table and convert into a parquet file. ADF will automatically identify and apply the SQL server table schema (i.e. data types and columns) to the parquet file. Since Client Connect is hosted in a private network, the self-hosted ADF integration runtime VM is used. <span style="color: rgb(255,86,48);">If the VM fails to perform the COPY activity (e.g. missing Java JER as dependency), we will lose the snapshot of a given period. If the data from a period is critical, we can restore a SQL server snapshot to a new database and manually process it. This would recommend the scheduled trigger time to be close to the snapshot taken time so that the snapshot would provide what data were supposed to be acquired mostly.</span></p><p><strong>2. </strong>If the acquisition pipeline finishes successfully, it will trigger the checkpoint function. Failures of the structured or curated pipelines will not prevent the execution of the acquisition pipeline for the next pipeline execution.  this design will reduce the likelyhood that an acquisition snapshot is not captured. <strong>In essence everytime the pipeline executes it copies data to raw before inferring whether to proceed</strong></p><p><strong>3. </strong>The checkpoint function (Azure Function) will query pipeline and activity status from Log Analytics Workspace using <a href="https://docs.microsoft.com/en-us/azure/data-explorer/kusto/concepts/" class="external-link" rel="nofollow">Kusto</a> (see <a href="https://medium.com/@IrekRomaniuk/query-azure-log-analytics-from-python-f282151b7d46" class="external-link" rel="nofollow">how to use Python query Log Analytics</a>.). Since Log Analytics doesn’t support AD token authentication, we will need to create a service principal and authenticate Azure Function with Log Analytics using a secret. Log Analytics can access both ADF and Azure Function’s logs (for the latter, need to access app insights via Log Analytics Workspace). Some example code (<a href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/285999125/ADF+Logging" data-linked-resource-id="285999125" data-linked-resource-version="2" data-linked-resource-type="page">ADF Logging</a>  contains example of how to query app insights log using Kusto from Log Analytics Workspace):</p><p><strong>4.</strong> The checkpoint function reads in the pipeline dependency conditions from a config stored in Cosmos, and apply to the pipeline and activity status.</p><p><strong>5a.</strong> If all conditions are met, continue to the structured pipeline.</p><p><strong>5b.</strong> If fail to met condition(s), cease the execution of the hyper pipeline and make pipeline failed.</p><p><strong>6a, 6b, 6c </strong>are the <a href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/370638849/Technical+Data+Quality+%28TDQ%29+Check+-+Non-PEGA+data+source" data-linked-resource-id="370638849" data-linked-resource-version="46" data-linked-resource-type="page">Technical Data Quality (TDQ) Check - Non-PEGA data source</a>. The parquet files will be loaded into the structured layer using the COPY command of snowflake if all the data quality checks pass successfully.</p><p><strong>7.</strong> If TDQ failed, trigger the move activity in the structure pipeline.</p><p><strong>8. </strong>If the structured pipeline (i.e. TDQ checker) finishes successfully, it will trigger the curated structure.</p><p><strong>9a</strong> and <strong>9b</strong> refer to <a href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/432144521/Time+Varying+Data+Load" data-linked-resource-id="432144521" data-linked-resource-version="5" data-linked-resource-type="page">Time Varying Data Load</a> .</p><h1 id="ADFHyperPipeline-DBPull(ClientConnect/IDR2)-CheckpointParameterandDecisionRules">Checkpoint Parameter and Decision Rules</h1><p>Same as stated in <a href="424116229.html" data-linked-resource-id="424116229" data-linked-resource-version="23" data-linked-resource-type="page">ADF Hyper Pipeline - File Server (Risk Console)</a> </p>
+                    </div>
+
+                                        <div class="pageSection group">
+                        <div class="pageSectionHeader">
+                            <h2 id="attachments" class="pageSectionTitle">Attachments:</h2>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437485682.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437354598.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190717.png">image-20201124-023209.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190720.png">image-20201124-022846.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190723.png">image-20201124-020659.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190726.png">image-20201124-015745.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190729.png">image-20201124-015740.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190732.png">image-20201124-002120.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190735.png">image-20201124-002005.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190738.png">image-20201124-001500.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190741.png">image-20201124-001130.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190744.png">image-20201124-000348.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190747.png">image-20201124-000234.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190750.png">image-20201123-233202.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190753.png">image-20201123-232302.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190756.png">image-20201123-230456.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190759.tmp">~drawio~5f3210f19aa96500466e388b~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/440238267.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/440533105.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/440500430.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437354806.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/462815739.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/462914040.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/462651785.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/462881412.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/462913988.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/462651803.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/462815715.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/462651817.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/462815725.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/462914026.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/462881454.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190714.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/683114621.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/679968894.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190711.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/437190686/437190708.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                    </div>
+                    </div>
+                    
+                                                      
+                </div>             </div> 
+            <div id="footer" role="contentinfo">
+                <section class="footer-body">
+                    <p>Document generated by Confluence on Feb 24, 2022 03:30</p>
+                    <div id="footer-logo"><a href="http://www.atlassian.com/">Atlassian</a></div>
+                </section>
+            </div>
+        </div>     </body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SDI : Claims Data Model - Risk Console Data Integration</title>
+        <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body class="theme-default aui-theme-default">
+        <div id="page">
+            <div id="main" class="aui-page-panel">
+                <div id="main-header">
+                    <div id="breadcrumb-section">
+                        <ol id="breadcrumbs">
+                            <li class="first">
+                                <span><a href="index.html">SDI</a></span>
+                            </li>
+                                                </ol>
+                    </div>
+                    <h1 id="title-heading" class="pagetitle">
+                                                <span id="title-text">
+                            SDI : Claims Data Model - Risk Console Data Integration
+                        </span>
+                    </h1>
+                </div>
+
+                <div id="content" class="view">
+                    <div class="page-metadata">
+                        
+        
+    
+        
+    
+        
+        
+            Created by <span class='author'> j.stones@vmia.vic.gov.au</span>, last modified by <span class='editor'> h.lindsaysmith@vmia.vic.gov.au Lindsay-Smith</span> on Sep 21, 2021
+                        </div>
+                    <div id="main-content" class="wiki-content group">
+                    <div class="confluence-information-macro confluence-information-macro-information"><span class="aui-icon aui-icon-small aui-iconfont-info confluence-information-macro-icon"></span><div class="confluence-information-macro-body"><p>Add your comments directly to the page. Include links to any relevant research, data, or feedback.</p></div></div><p /><div class='plugin-tabmeta-details'><div class="table-wrap"><table data-layout="default" data-local-id="99cb0762-1626-4395-8e05-d62c6e1dcc79" class="confluenceTable"><colgroup><col style="width: 157.0px;"/><col style="width: 569.0px;"/></colgroup><tbody><tr><th class="confluenceTh"><p>Status</p></th><td class="confluenceTd"><p><span class="status-macro aui-lozenge aui-lozenge-success">DECIDED</span></p></td></tr><tr><th class="confluenceTh"><p>Impact</p></th><td class="confluenceTd"><p> <span class="status-macro aui-lozenge aui-lozenge-current">MEDIUM</span> </p></td></tr><tr><th class="confluenceTh"><p>Driver</p></th><td class="confluenceTd"><p><a class="confluence-userlink user-mention" data-username="60c80092b21561006959ea5c" data-account-id="60c80092b21561006959ea5c" href="https://vmia.atlassian.net/wiki/people/60c80092b21561006959ea5c?ref=confluence" target="_blank" data-base-url="https://vmia.atlassian.net/wiki">j.stones@vmia.vic.gov.au (Deactivated)</a> </p></td></tr><tr><th class="confluenceTh"><p>Approver</p></th><td class="confluenceTd"><p><a class="confluence-userlink user-mention" data-username="5d706d9ef989e00d8c7e9fd0" data-account-id="5d706d9ef989e00d8c7e9fd0" href="https://vmia.atlassian.net/wiki/people/5d706d9ef989e00d8c7e9fd0?ref=confluence" target="_blank" data-linked-resource-id="19464347" data-linked-resource-version="1" data-linked-resource-type="userinfo" data-base-url="https://vmia.atlassian.net/wiki">Chris Jackson</a> </p></td></tr><tr><th class="confluenceTh"><p>Contributors</p></th><td class="confluenceTd"><p><a class="confluence-userlink user-mention" data-username="5dc3a4b85678870df715950f" data-account-id="5dc3a4b85678870df715950f" href="https://vmia.atlassian.net/wiki/people/5dc3a4b85678870df715950f?ref=confluence" target="_blank" data-linked-resource-id="19464355" data-linked-resource-version="1" data-linked-resource-type="userinfo" data-base-url="https://vmia.atlassian.net/wiki">Bob Zhu</a> <a class="confluence-userlink user-mention" data-username="5ecf250a4824b20c182c6999" data-account-id="5ecf250a4824b20c182c6999" href="https://vmia.atlassian.net/wiki/people/5ecf250a4824b20c182c6999?ref=confluence" target="_blank" data-linked-resource-id="6979597" data-linked-resource-version="1" data-linked-resource-type="userinfo" data-base-url="https://vmia.atlassian.net/wiki">h.lindsaysmith@vmia.vic.gov.au Lindsay-Smith</a>  </p></td></tr><tr><th class="confluenceTh"><p>Informed</p></th><td class="confluenceTd"><p><a class="confluence-userlink user-mention" data-username="5dbb971f4ff1890d3103875a" data-account-id="5dbb971f4ff1890d3103875a" href="https://vmia.atlassian.net/wiki/people/5dbb971f4ff1890d3103875a?ref=confluence" target="_blank" data-linked-resource-id="6979594" data-linked-resource-version="1" data-linked-resource-type="userinfo" data-base-url="https://vmia.atlassian.net/wiki">Lasath Kahingala</a></p></td></tr><tr><th class="confluenceTh"><p>Due date</p></th><td class="confluenceTd"><p><time datetime="2021-08-02" class="date-past">02 Aug 2021</time></p></td></tr><tr><th class="confluenceTh"><p>Outcome</p></th><td class="confluenceTd"><p>Risk console is integrated into the modelled layer, whilst data is still being updated and then will be turned off once there are no more changes</p></td></tr></tbody></table></div></div><h2 id="ClaimsDataModel-RiskConsoleDataIntegration-Background">Background</h2><p>During transition to C360 there is a period of time where both Risk Console and C360 will contain the data required for the claims reporting data model depending on the status of the roll out. </p><p>Since the eventual plan is for Risk Console to be retired entirely, the effort to integrate Risk Console into the data pipelines (which would require conforming Risk Console &amp; C360 data within the stored procedures that populate the data warehouse) would be throwaway in the first place and would also require unravelling at a later date, causing potential regression issues. </p><p>Instead, a hybrid approach where C360 is treated as the master and is the only fully engineered source for the data model layer is preferred. In order to bring in the required data into the reporting model for the interim state, we can create a view layer on top of the star schema which will augment with Risk Console data.</p><p>An additional benefit of taking this approach besides effort savings, is that the star schema will never need to be altered, only added to as the functionality is migrated to Risk Console. This means reduced complexity and risk in regression and reconciliation testing.</p><p>As components of Risk Console are decommissioned, the corresponding parts of the view layer can simply be removed.</p><p /><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio-sketch5463211677508206481">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio-sketch5463211677508206481"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio-sketch5463211677508206481",
+    "key":"drawio-sketch",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=1151697561&diagramName=Design+Decision+-+Model+Integration&revision=1&width=1326&height=745.883984375&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=1151697561&displayName=Design+Decision+-+Model+Integration&contentId=&custContentId=1227292677&contentVer=1&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&sketch=1&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio-sketch5463211677508206481&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1162.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"macro\":{\"outputType\":\"html_export\",\"hash\":\"2ddef498-f918-4f9d-8da4-c1b7e21bd46f\",\"id\":\"2ddef498-f918-4f9d-8da4-c1b7e21bd46f\"},\"content\":{\"type\":\"page\",\"version\":\"5\",\"id\":\"1151697561\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"1151697561\",\"macro.hash\":\"2ddef498-f918-4f9d-8da4-c1b7e21bd46f\",\"page.type\":\"page\",\"macro.localId\":\"c838666c-cc74-41ac-bfa0-9ca651b17051\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=1151697561|custContentId=1227292677|lbox=1|diagramDisplayName=Design Decision - Model Integration|contentVer=1|revision=1|baseUrl=https://vmia.atlassian.net/wiki|diagramName=Design Decision - Model Integration|pCenter=0|width=1326|links=|tbstyle=|height=745.883984375\",\"space.id\":\"262145\",\"diagramDisplayName\":\"Design Decision - Model Integration\",\"diagramName\":\"Design Decision - Model Integration\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"745.883984375\",\"space.key\":\"SDI\",\"user.id\":\"60c80092624d700069d68fe9\",\"content.version\":\"5\",\"page.title\":\"Claims Data Model - Risk Console Data Integration\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"1151697561\",\"custContentId\":\"1227292677\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"1\",\"page.version\":\"5\",\"revision\":\"1\",\"user.key\":\"8a7f808a79f96b90017a0d42d78807c4\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"1151697561\",\"width\":\"1326\",\"macro.id\":\"2ddef498-f918-4f9d-8da4-c1b7e21bd46f\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<p>The trade off for this approach is query performance &amp; execution cost against the model as the complex logic to integrate Risk Console is executed each time the data model is accessed, rather than during an overnight batch. </p><p>These costs should be offset by savings in build, reconciliation &amp; regression testing effort. </p><h2 id="ClaimsDataModel-RiskConsoleDataIntegration-Relevantdata">Relevant data</h2><p></p><h2 id="ClaimsDataModel-RiskConsoleDataIntegration-Optionsconsidered">Options considered</h2><div class="table-wrap"><table data-layout="default" data-local-id="186c5220-3d00-49ac-99f4-ad4063be3a23" class="confluenceTable"><colgroup><col style="width: 203.0px;"/><col style="width: 292.0px;"/><col style="width: 264.0px;"/></colgroup><tbody><tr><th class="confluenceTh"><p /></th><th class="confluenceTh"><p>RC Data Integrated into Modelled Layer</p></th><th class="confluenceTh"><p>RC Data Augmented @ Consumption Layer</p></th></tr><tr><th class="confluenceTh"><p>Description</p></th><td class="confluenceTd"><p>In build phase, risk console tables will be integrated into the stored procedures to load the claims data model and each nightly load will add risk console deltas.</p></td><td class="confluenceTd"><p>In build phase, only C360 data will be engineered into the stored procedures and the physicalised claims data model. Risk console data will be augmented on top of this model in a temporary view layer.</p></td></tr><tr><th class="confluenceTh"><p>Pros and cons</p></th><td class="confluenceTd"><p><img class="emoticon emoticon-plus" data-emoji-id="atlassian-plus" data-emoji-shortname=":plus:" data-emoji-fallback=":plus:" src="images/icons/emoticons/add.png" width="16" height="16" data-emoticon-name="plus" alt="(plus)"/> Better query time performance.</p><p><img class="emoticon emoticon-minus" data-emoji-id="atlassian-minus" data-emoji-shortname=":minus:" data-emoji-fallback=":minus:" src="images/icons/emoticons/forbidden.png" width="16" height="16" data-emoticon-name="minus" alt="(minus)"/> Higher build effort both in initial build and as C360 roll out requires further changes to the data model. </p><p><img class="emoticon emoticon-minus" data-emoji-id="atlassian-minus" data-emoji-shortname=":minus:" data-emoji-fallback=":minus:" src="images/icons/emoticons/forbidden.png" width="16" height="16" data-emoticon-name="minus" alt="(minus)"/> More complex to transition from Risk Console to C360 in data model.  </p></td><td class="confluenceTd"><p><img class="emoticon emoticon-plus" data-emoji-id="atlassian-plus" data-emoji-shortname=":plus:" data-emoji-fallback=":plus:" src="images/icons/emoticons/add.png" width="16" height="16" data-emoticon-name="plus" alt="(plus)"/> Quicker (and cheaper) to build.</p><p><img class="emoticon emoticon-plus" data-emoji-id="atlassian-plus" data-emoji-shortname=":plus:" data-emoji-fallback=":plus:" src="images/icons/emoticons/add.png" width="16" height="16" data-emoticon-name="plus" alt="(plus)"/> Decouples risk console &amp; client 360 data integration rules, making the transition easier. </p><p><img class="emoticon emoticon-plus" data-emoji-id="atlassian-plus" data-emoji-shortname=":plus:" data-emoji-fallback=":plus:" src="images/icons/emoticons/add.png" width="16" height="16" data-emoticon-name="plus" alt="(plus)"/> Reduces risk of issues in regression testing.</p><p><img class="emoticon emoticon-minus" data-emoji-id="atlassian-minus" data-emoji-shortname=":minus:" data-emoji-fallback=":minus:" src="images/icons/emoticons/forbidden.png" width="16" height="16" data-emoticon-name="minus" alt="(minus)"/> Performance impact as data model query will be more complex, sourcing data from both modelled layer and risk console staging layer.</p></td></tr><tr><th class="confluenceTh"><p>Estimated cost</p></th><td class="confluenceTd"><p><span class="status-macro aui-lozenge aui-lozenge-current">MEDIUM</span></p></td><td class="confluenceTd"><p><span class="status-macro aui-lozenge aui-lozenge-success">LOW</span></p></td></tr></tbody></table></div><h2 id="ClaimsDataModel-RiskConsoleDataIntegration-Actionitems">Action items</h2><p></p><ul class="inline-task-list" data-inline-tasks-content-id="1151697561"><li data-inline-task-id="1"><span class="placeholder-inline-tasks"><a class="confluence-userlink user-mention" data-username="60c80092b21561006959ea5c" data-account-id="60c80092b21561006959ea5c" href="https://vmia.atlassian.net/wiki/people/60c80092b21561006959ea5c?ref=confluence" target="_blank" data-base-url="https://vmia.atlassian.net/wiki">j.stones@vmia.vic.gov.au (Deactivated)</a> to set up meeting to discuss.</span></li></ul><h2 id="ClaimsDataModel-RiskConsoleDataIntegration-Outcome">Outcome</h2><p style="margin-left: 30.0px;">The design has settled with Risk Console being mapped as a source into both the staging layer and the warehouse tables.  Whilst the system is live the data will update, once the system is static the union queries for riskconsole can be deleted.</p><p>Up to today <time datetime="2021-09-21" class="date-past">21 Sep 2021</time> there have been no data quality issues that would block an onoing live feed of data into the warehouse from risk console.</p><p />
+                    </div>
+
+                                        <div class="pageSection group">
+                        <div class="pageSectionHeader">
+                            <h2 id="attachments" class="pageSectionTitle">Attachments:</h2>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1151697561/1227620367.tmp">~Design Decision - Model Integration.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1151697561/1227489298.tmp">~Design Decision - Model Integration.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1151697561/1228275715.tmp">~Design Decision - Model Integration.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1151697561/1228111881">Design Decision - Model Integration</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1151697561/1228111886.png">Design Decision - Model Integration.png</a> (image/png)
+                                <br/>
+                                                    </div>
+                    </div>
+                    
+                                                      
+                </div>             </div> 
+            <div id="footer" role="contentinfo">
+                <section class="footer-body">
+                    <p>Document generated by Confluence on Dec 15, 2021 03:20</p>
+                    <div id="footer-logo"><a href="http://www.atlassian.com/">Atlassian</a></div>
+                </section>
+            </div>
+        </div>     </body>
+</html>

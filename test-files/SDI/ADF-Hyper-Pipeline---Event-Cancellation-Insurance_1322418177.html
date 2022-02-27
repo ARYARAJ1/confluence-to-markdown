@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SDI : ADF Hyper Pipeline - Event Cancellation Insurance</title>
+        <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body class="theme-default aui-theme-default">
+        <div id="page">
+            <div id="main" class="aui-page-panel">
+                <div id="main-header">
+                    <div id="breadcrumb-section">
+                        <ol id="breadcrumbs">
+                            <li class="first">
+                                <span><a href="index.html">SDI</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="Ingestion-Pipelines_1327628295.html">Ingestion Pipelines</a></span>
+                            </li>
+                                                </ol>
+                    </div>
+                    <h1 id="title-heading" class="pagetitle">
+                                                <span id="title-text">
+                            SDI : ADF Hyper Pipeline - Event Cancellation Insurance
+                        </span>
+                    </h1>
+                </div>
+
+                <div id="content" class="view">
+                    <div class="page-metadata">
+                        
+        
+    
+        
+    
+        
+        
+            Created by <span class='author'> Cameron Roberts</span>, last modified on Feb 08, 2022
+                        </div>
+                    <div id="main-content" class="wiki-content group">
+                    <h2 id="ADFHyperPipeline-EventCancellationInsurance-Background">Background</h2><p>Due to quick nature of creating event insurance and the lengthy process of creating policies in client 360 it was decided by the claims team to record these policies in a excel spreadsheet. Later on managing the excel spreadsheet and generating reports from it was becoming increasing difficult and insights was approached to help. </p><h2 id="ADFHyperPipeline-EventCancellationInsurance-KeyActivities">Key Activities</h2><p>The key activities of this pipeline are: </p><ol><li><p> To clean up the current excel sheet to provide a quality set of data to ingest including:</p></li><li><p> To create a pipeline to import the required sheets from excel into SDI/snowflake</p></li><li><p> To create reports in tableau from the data in snowflake </p></li></ol><h2 id="ADFHyperPipeline-EventCancellationInsurance-Cleanuptheexcelsheet">Clean up the excel sheet </h2><p>The excel sheet was cleaned up in the following ways:</p><ol><li><p>Formula fields have been protected/locked from edits. It is still possible to highlight and format (colour) the fields, but it is no longer possible to edit the formula itself to ensure the data is not overridden. </p></li><li><p>The column names have been changed to match a more database-friendly format for data import. </p></li><li><p>Left-aligned many fields for consistency.</p></li><li><p>Ensured that date fields appear the same way - we might need a follow up to ensure date fields don't error out. </p></li><li><p>Fixed up naming in the ENTERED_BY, CHECKED_BY, DELEGATION_AUTHORITY fields (removed trailing spaces, capitalised first and last names, corrected spelling mistakes).</p></li><li><p>Removed NA/Error's from appearing in formula fields (e.g. blank rows showed ERROR or #N/A, that has been removed and blanked out for consistency). </p></li></ol><p /><h2 id="ADFHyperPipeline-EventCancellationInsurance-Pipeline">Pipeline</h2><h3 id="ADFHyperPipeline-EventCancellationInsurance-HighLevelDesign">High Level Design</h3><p>Original the plan was to import the excel into Azure Data Factory directly using a sharepoint connector. However due to time constraints it was decided that using the exisitng risk console pipeline and a python script running on the on-prem VM to copy the excel sheet from sharepoint to the K drive. <br/></p><p>Multiple sheets of the excel file need to be ingested and their is a sheet parameter introduced in the pipeline for this purpose. <br/></p><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio8241367737666999635">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio8241367737666999635"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio8241367737666999635",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=1322418177&diagramName=Untitled+Diagram.drawio&revision=1&width=1457&height=401&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=1322418177&displayName=Untitled+Diagram.drawio&contentId=&custContentId=1323073539&contentVer=1&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio8241367737666999635&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1213.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"editor\":{\"version\":\"\\\"v2\\\"\"},\"macro\":{\"outputType\":\"html_export\",\"hash\":\"d4d5ae9e-b572-4c30-a3b0-dbb79d1c4485\",\"id\":\"d4d5ae9e-b572-4c30-a3b0-dbb79d1c4485\"},\"content\":{\"type\":\"page\",\"version\":\"2\",\"id\":\"1322418177\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"1322418177\",\"macro.hash\":\"d4d5ae9e-b572-4c30-a3b0-dbb79d1c4485\",\"page.type\":\"page\",\"macro.localId\":\"c50d2594-d370-477b-841c-7cca09400a66\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=1322418177|custContentId=1323073539|lbox=1|diagramDisplayName=Untitled Diagram.drawio|contentVer=1|revision=1|baseUrl=https://vmia.atlassian.net/wiki|diagramName=Untitled Diagram.drawio|pCenter=0|width=1457|links=|tbstyle=|height=401\",\"space.id\":\"262145\",\"diagramDisplayName\":\"Untitled Diagram.drawio\",\"diagramName\":\"Untitled Diagram.drawio\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"401\",\"space.key\":\"SDI\",\"user.id\":\"5ecf250a4824b20c182c6999\",\"content.version\":\"2\",\"page.title\":\"ADF Hyper Pipeline - Event Cancellation Insurance\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"1322418177\",\"custContentId\":\"1323073539\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"1\",\"page.version\":\"2\",\"revision\":\"1\",\"user.key\":\"8a7f80897281861b017282ee78850105\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"1322418177\",\"width\":\"1457\",\"macro.id\":\"d4d5ae9e-b572-4c30-a3b0-dbb79d1c4485\",\"editor.version\":\"\\\"v2\\\"\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<p /><h3 id="ADFHyperPipeline-EventCancellationInsurance-DetailedDesign">Detailed Design</h3><h4 id="ADFHyperPipeline-EventCancellationInsurance-Steps">Steps</h4><ol><li><p>Parameter parser - Azure function to parse and process the parameters passed into the ADF pipeline trigger</p></li><li><p>Acquisition layer</p><ol><li><p>Check to see if the file is already in landing and if so skip part b</p></li><li><p>The linked service/dataset connects to the network (K:/) drive to check the file exists and if so places it in the landingcontainer of the data lake</p></li><li><p>The file is copied to the raw in parquet format. </p></li></ol></li><li><p>event_last_pipeline_status_query - use the existing function last_pipeline_status_query to check the previous day’s execution for the geospatial hyper pipeline was successful or not. Fail the pipe if not</p></li><li><p>Structured layer - Same as Risk console</p></li><li><p>Curated Layer - Same as Risk console</p></li></ol><h3 id="ADFHyperPipeline-EventCancellationInsurance-LoadCadence">Load Cadence</h3><p>All sheets are loaded daily. </p>
+                    </div>
+
+                                        <div class="pageSection group">
+                        <div class="pageSectionHeader">
+                            <h2 id="attachments" class="pageSectionTitle">Attachments:</h2>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323139073.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323171841.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323171850.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323204609.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323237377.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323106311.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323270145.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323270154.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323302913.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323335681.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323368449.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323040776.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323270163.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323401217.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323139082.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323433985.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323466753.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323302922.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323237386.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323139091.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323499521.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323335690.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323335699.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323532289.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323565057.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323106320.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323597825.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323335708.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323008008.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323106305.tmp">~drawio~6109e891b704b40068042fae~Untitled Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323335717.drawio">Untitled Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/1322418177/1323368458.png">Untitled Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                    </div>
+                    </div>
+                    
+                                                      
+                </div>             </div> 
+            <div id="footer" role="contentinfo">
+                <section class="footer-body">
+                    <p>Document generated by Confluence on Feb 24, 2022 03:30</p>
+                    <div id="footer-logo"><a href="http://www.atlassian.com/">Atlassian</a></div>
+                </section>
+            </div>
+        </div>     </body>
+</html>

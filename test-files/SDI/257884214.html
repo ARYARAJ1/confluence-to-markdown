@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SDI : ADF Hyper Pipeline - XML (PEGA)</title>
+        <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body class="theme-default aui-theme-default">
+        <div id="page">
+            <div id="main" class="aui-page-panel">
+                <div id="main-header">
+                    <div id="breadcrumb-section">
+                        <ol id="breadcrumbs">
+                            <li class="first">
+                                <span><a href="index.html">SDI</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="Ingestion-Pipelines_1327628295.html">Ingestion Pipelines</a></span>
+                            </li>
+                                                </ol>
+                    </div>
+                    <h1 id="title-heading" class="pagetitle">
+                                                <span id="title-text">
+                            SDI : ADF Hyper Pipeline - XML (PEGA)
+                        </span>
+                    </h1>
+                </div>
+
+                <div id="content" class="view">
+                    <div class="page-metadata">
+                        
+        
+    
+        
+    
+        
+        
+            Created by <span class='author'> Catherine Wang</span>, last modified by <span class='editor'> Rahul Pandey</span> on Mar 24, 2021
+                        </div>
+                    <div id="main-content" class="wiki-content group">
+                    <p>This section contains the build summary of ADF Hyper Pipeline for PEGA. </p><p>At a high level, both ADF Hyper Pipeline and sub-pipeline (Ingestion and Acquisition) will be provisioned via <code>pulumi </code>and ARM template. The pipeline will constrains the pre-defined connections, activities, datasets and <strong>placeholders</strong> for <strong>runtime parameters.</strong> </p><p>Below is a diagram to illustrate the activities and functions that has been scheduled in the pipeline.  </p><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio6534225490382908918">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio6534225490382908918"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio6534225490382908918",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=257884214&diagramName=hyperpipeline_Diagram.drawio&revision=27&width=2463&height=880.5&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=257884214&displayName=hyperpipeline_Diagram.drawio&contentId=&custContentId=260898835&contentVer=27&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio6534225490382908918&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1213.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"editor\":{\"version\":\"\\\"v2\\\"\"},\"macro\":{\"outputType\":\"html_export\",\"hash\":\"a2ba302f-31a3-496b-8534-e5966eae2a36\",\"id\":\"a2ba302f-31a3-496b-8534-e5966eae2a36\"},\"content\":{\"type\":\"page\",\"version\":\"40\",\"id\":\"257884214\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"257884214\",\"macro.hash\":\"a2ba302f-31a3-496b-8534-e5966eae2a36\",\"page.type\":\"page\",\"macro.localId\":\"\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=257884214|custContentId=260898835|lbox=1|diagramDisplayName=hyperpipeline_Diagram.drawio|contentVer=27|revision=27|baseUrl=https://vmia.atlassian.net/wiki|diagramName=hyperpipeline_Diagram.drawio|pCenter=0|width=2463|links=|tbstyle=|height=880.5\",\"space.id\":\"262145\",\"diagramDisplayName\":\"hyperpipeline_Diagram.drawio\",\"diagramName\":\"hyperpipeline_Diagram.drawio\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"880.5\",\"space.key\":\"SDI\",\"user.id\":\"5ecf250a4824b20c182c6999\",\"content.version\":\"40\",\"page.title\":\"ADF Hyper Pipeline - XML (PEGA)\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"257884214\",\"custContentId\":\"260898835\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"27\",\"page.version\":\"40\",\"revision\":\"27\",\"user.key\":\"8a7f80897281861b017282ee78850105\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"257884214\",\"width\":\"2463\",\"macro.id\":\"a2ba302f-31a3-496b-8534-e5966eae2a36\",\"editor.version\":\"\\\"v2\\\"\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<h2 id="ADFHyperPipeline-XML(PEGA)-DefinitionandconceptofHyperPipeline">Definition and concept of Hyper Pipeline </h2><p>The hyper pipeline is used to schedule and orchestrate the run of the sub pipelines and activities defined in the acquisition and ingestion process. At a high level, the acquisition pipeline is responsible for pulling data from SFTP and sink it in datalake landing layer. The ingestion pipeline constrains the process of de-nesting , extracting and restructuring the XML data into snowflake tables. The curated pipeline will contain the load from the snowflake structured layer to the curated layer. </p><p>The hyper pipeline will be provisioned in the build time and chaining the acquisition, ingestion and curated pipeline for different data source. (e.g., When triggering the PEGA hyper pipeline, the PEGA Acquisition and Ingestion pipelines will be run under the hook. )</p><p>The details of all the activities in each sub-pipeline are explained in the diagram above. </p><p /><h3 id="ADFHyperPipeline-XML(PEGA)-Triggerworkflowdescription:">Trigger workflow description:</h3><ol><li><p>A trigger will be waken up at the scheduled time, the trigger has the runtime config hardcoded, and pass in the corresponding global parameters to the pipeline. All triggers have been created based on the build-time config during the deployment phase.</p></li><li><p>The trigger triggers the hyper pipeline<strong> </strong>with prepared parameter values. </p></li></ol><h3 id="ADFHyperPipeline-XML(PEGA)-Pipelineworkflowdescription:">Pipeline workflow description:</h3><ol><li><p>Pre acquisition pipeline activities</p><ol><li><p>Upon commencing the pipeline, a parameter parsing function will consume the trigger parameters and create the required parameters for consumption of the daily file. </p></li></ol></li><li><p>Two checks will be performed before proceeding with the current day’s execution</p><ol><li><p>A check for unprocessed files from previous days in the data lake will occur and if found trigger an alert</p></li><li><p>A check for missed files from previous days in the PEGA SFTP server and if found trigger an alert</p></li></ol></li><li><p>SFTP pull pattern will pull all zip files for the given extract class from SFTP server based on the naming pattern and copy into the landing container of the datalake</p></li><li><p>A copy statement will unzip these files and store the contents in the landing unzipped container.</p><ol><li><p>If any of files that are unzipped are invalid, this step will fail and should trigger another copy step which removes the files from the folder in the landing container and moves them to an error directory for the extract class. This is detailed below in the section <strong>Invalid zip files</strong></p></li></ol></li><li><p>The integrity check will then run on the file to be loaded for the given day to ensure the data is valid</p></li><li><p>A check for multiple files for an extract will occur, if multiple files are found then an error will be raised and alerts will be sent.</p></li><li><p>When the ingestion pipeline starts, a check for pipeline success on the previous day occurs, if the previous pipeline had an error and had not been resolved manually then the pipeline will fail and alerts will be sent.</p></li><li><p>The XSD difference checker will check for any changes in the xsd file of a given extract. </p><ol><li><p>If a difference is detected, this function will change the <code>curated_ready_flag</code> within the observability cosmos for this extract to be false, as a schema change has occurred and this change must be manually validated before loading to curated.</p></li><li><p>XML config generator - If a schema change has occurred, new config will be generated from the current xsd file</p></li></ol></li><li><p>Copy to snowflake function is executed to copy data from raw container into semi structured table in snowflake structured layer.</p></li><li><p>The dynamic SQL function will de-nest the extract and will load each of the tables for the extract into the structured database within Snowflake. These will be created based on the structured of the current xsd schema (based on the config created in step 8b) as all tables in structured layer are create or replace (transient)</p></li><li><p>The curated load checkpoint function will query the observability cosmos for this extract to check if the <code>curated_ready_flag</code> is <code>true</code> for this extract. If it is false, this function will fail and alert. Schema evolution is manually executed at this point to change the structure of the curated tables.</p></li><li><p>The curated load function will construct and run the merge statement to load data from structured into curated database on Snowflake. </p></li></ol><h3 id="ADFHyperPipeline-XML(PEGA)-Loggingworkflowdescription:">Logging workflow description:</h3><ol><li><p>Each activity and pipeline that occurs in ADF will be logged to the log analytics workspace <em>log-sdi-&lt;env&gt;-logical.</em> This workspace can be queried to understand past runs</p></li><li><p>The last status (failure or success) of each extract will be tracked in a cosmos DB for observability.</p></li></ol><h3 id="ADFHyperPipeline-XML(PEGA)-Invalidzipfiles:">Invalid zip files:</h3><p>Note this section on invalid zip files has been designed but not yet implemented. An invalid zip file will be detected at step 3 in the hyper pipeline (copy statement to unzip files). An invalid zip file can be detected in any of the sequenced extracts (e.g. _1, _2, …). When an invalid zip file is detected, all of the extracts sequence files for that date should be removed from landing and not processed further. for Upon identifying an invalid zip file from the SFTP server, the following steps are suggested to occur.</p><ol><li><p>Remove all sequenced extracts for the date containing the invalid zip file from the extract folder within the landing container and move to an error directory in the landing container. (diagram below for implementation in pega_acquisition_pipeline &gt; check_file_not_exists)</p></li><li><p>Raise an error for the pipeline execution</p><ol><li><p>This will block future executions of the pipeline which is the expected behaviour</p></li></ol></li><li><p>Request a new extract from Pega</p></li><li><p>Process the new extract from Pega</p></li></ol><span class="confluence-embedded-file-wrapper image-center-wrapper"><img class="confluence-embedded-image image-center" loading="lazy" src="attachments/257884214/472778025.png" data-image-src="attachments/257884214/472778025.png" data-height="380" data-width="1365" data-unresolved-comment-count="0" data-linked-resource-id="472778025" data-linked-resource-version="1" data-linked-resource-type="attachment" data-linked-resource-default-alias="image-20201208-060545.png" data-base-url="https://vmia.atlassian.net/wiki" data-linked-resource-content-type="image/png" data-linked-resource-container-id="257884214" data-linked-resource-container-version="40" data-media-id="008313ed-c5ae-4c31-bbcd-b28debf35b18" data-media-type="file"></span><p /><h2 id="ADFHyperPipeline-XML(PEGA)-Run-timeandBuild-timeConfig">Run-time and Build-time Config </h2><p>Below is the example of The build time config for acquisition pipeline (dataset)</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">{
+  &quot;id&quot;: &quot;pega_datasets&quot;,
+  &quot;resourceType&quot;: &quot;datasets&quot;,
+  &quot;resources&quot;: [
+    {
+      &quot;dataStore&quot;: &quot;SftpLocation&quot;,
+      &quot;linkedServiceName&quot;: &quot;pegaSftpLinkedService&quot;,
+      &quot;datasetName&quot;: &quot;inputSftpZipped&quot;,
+      &quot;datasetType&quot;: &quot;Binary&quot;,
+      &quot;parameters&quot;: [
+        {
+          &quot;name&quot;: &quot;folderPath&quot;,
+          &quot;type&quot;: &quot;string&quot;
+        },
+        {
+          &quot;name&quot;: &quot;fileName&quot;,
+          &quot;type&quot;: &quot;string&quot;
+        }
+      ]
+    },
+    {
+      &quot;dataStore&quot;: &quot;AzureBlobFSLocation&quot;,
+      &quot;linkedServiceName&quot;: &quot;datalakeStorageLinkedService&quot;,
+      &quot;datasetName&quot;: &quot;outputDatalakeLandingZipped&quot;,
+      &quot;datasetType&quot;: &quot;Binary&quot;,
+      &quot;fileSystem&quot;: &quot;landing-sdi-&lt;env&gt;-datalake&quot;,
+      &quot;parameters&quot;: [
+        {
+          &quot;name&quot;: &quot;folderPath&quot;,
+          &quot;type&quot;: &quot;string&quot;
+        }
+      ]
+    },
+    {
+      &quot;dataStore&quot;: &quot;AzureBlobFSLocation&quot;,
+      &quot;linkedServiceName&quot;: &quot;datalakeStorageLinkedService&quot;,
+      &quot;datasetName&quot;: &quot;inputDatalakeLandingZipped&quot;,
+      &quot;datasetType&quot;: &quot;Binary&quot;,
+      &quot;parameters&quot;: [
+        {
+          &quot;name&quot;: &quot;folderPath&quot;,
+          &quot;type&quot;: &quot;string&quot;
+        },
+        {
+          &quot;name&quot;: &quot;fileName&quot;,
+          &quot;type&quot;: &quot;string&quot;
+        }
+      ],
+      &quot;fileSystem&quot;: &quot;landing-sdi-&lt;env&gt;-datalake&quot;,
+      &quot;compressionType&quot;: &quot;ZipDeflate&quot;
+    },
+    {
+      &quot;dataStore&quot;: &quot;AzureBlobFSLocation&quot;,
+      &quot;linkedServiceName&quot;: &quot;datalakeStorageLinkedService&quot;,
+      &quot;datasetName&quot;: &quot;outputDatalakeLandingUnzipped&quot;,
+      &quot;datasetType&quot;: &quot;Binary&quot;,
+      &quot;fileSystem&quot;: &quot;landing-unzipped-sdi-&lt;env&gt;-datalake&quot;,
+      &quot;parameters&quot;: [
+        {
+          &quot;name&quot;: &quot;folderPath&quot;,
+          &quot;type&quot;: &quot;string&quot;
+        }
+      ]
+    },
+    {
+      &quot;dataStore&quot;: &quot;AzureBlobFSLocation&quot;,
+      &quot;linkedServiceName&quot;: &quot;datalakeStorageLinkedService&quot;,
+      &quot;datasetName&quot;: &quot;inputDatalakeLandingUnzipped&quot;,
+      &quot;datasetType&quot;: &quot;Binary&quot;,
+      &quot;parameters&quot;: [
+        {
+          &quot;name&quot;: &quot;folderPath&quot;,
+          &quot;type&quot;: &quot;string&quot;
+        }
+      ],
+      &quot;fileSystem&quot;: &quot;landing-unzipped-sdi-&lt;env&gt;-datalake&quot;
+    },
+    {
+      &quot;dataStore&quot;: &quot;AzureBlobFSLocation&quot;,
+      &quot;linkedServiceName&quot;: &quot;datalakeStorageLinkedService&quot;,
+      &quot;datasetName&quot;: &quot;outputDatalakeRaw&quot;,
+      &quot;datasetType&quot;: &quot;Binary&quot;,
+      &quot;parameters&quot;: [
+        {
+          &quot;name&quot;: &quot;folderPath&quot;,
+          &quot;type&quot;: &quot;string&quot;
+        }
+      ],
+      &quot;fileSystem&quot;: &quot;raw-sdi-&lt;env&gt;-datalake&quot;
+    }
+  ]
+}</pre>
+</div></div><p>This config will be consumed by the <code>SDI-DATALAKE-PIPELINE </code> project and provision a list of datasets that need to be used in the sub-pipeline. </p><p>Cosmos DB would contains separate build time config for <code>Dataset</code>, <code>Linked Service</code> and<code> Pipeline Activities</code>. </p><p>Below is an example of the runtime config for data feed items:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">{
+  &quot;id&quot;: &quot;pega-config&quot;,
+  &quot;layer&quot;: &quot;landing&quot;,
+  &quot;resourceType&quot;: &quot;data feeds&quot;,
+  &quot;feeds&quot;: [
+    {
+      &quot;fileName&quot;: &quot;BIX_VMIA_Ins_Data_Payee_PayeeSORExtract&quot;,
+      &quot;sftpFolderPath&quot;: &quot;/pegafiletransfer/bix&quot;,
+      &quot;sourceSystem&quot;: &quot;PEGA&quot;,
+      &quot;classification&quot;: &quot;PROTECTED&quot;,
+      &quot;compressionType&quot;: &quot;zip&quot;,
+      &quot;sorClass&quot;: &quot;VMIA_Ins_Data_Payee&quot;,
+      &quot;masterTableName&quot;: &quot;VMIA&quot;
+    },
+    {
+      &quot;fileName&quot;: &quot;BIX_VMIA_Interface_BankDetails_BankSORExtract&quot;,
+      &quot;sftpFolderPath&quot;: &quot;/pegafiletransfer/bix&quot;,
+      &quot;sourceSystem&quot;: &quot;PEGA&quot;,
+      &quot;classification&quot;: &quot;PROTECTED&quot;,
+      &quot;compressionType&quot;: &quot;zip&quot;,
+      &quot;sorClass&quot;: &quot;VMIA_Interface_BankDetails&quot;,
+      &quot;masterTableName&quot;: &quot;VMIA&quot;
+    }
+  ]
+}</pre>
+</div></div><h2 id="ADFHyperPipeline-XML(PEGA)-ADFTriggerforHyperPipeline">ADF Trigger for HyperPipeline </h2><p>There is a separate project for provision the ADF triggers based on the runtime config. Once the trigger has been provisioned, the pipeline will be run at a given point of time with retry policies. </p><p>An example of the runtime config for triggers created at the data feed level is shown below:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: java; gutter: false; theme: Confluence" data-theme="Confluence">{
+  &quot;id&quot;: &quot;pega-trigger-config&quot;,
+  &quot;datafeed&quot;: &quot;BIX&quot;,
+  &quot;configType&quot;: &quot;trigger&quot;,
+  &quot;pipelineReference&quot;: {
+    &quot;referenceName&quot;: &quot;hyperPipeline&quot;,
+    &quot;type&quot;: &quot;PipelineReference&quot;
+  },
+  &quot;runtimeState&quot;: &quot;Stopped&quot;,
+  &quot;type&quot;: &quot;TumblingWindowTrigger&quot;,
+  &quot;frequency&quot;: &quot;Hour&quot;,
+  &quot;interval&quot;: 24,
+  &quot;startTime&quot;: &quot;2020-10-16T00:00:00.000Z&quot;,
+  &quot;delay&quot;: &quot;00:00:00&quot;,
+  &quot;maxConcurrency&quot;: 50,
+  &quot;retryPolicy&quot;: {
+    &quot;count&quot;: 2,
+    &quot;intervalInSeconds&quot;: 120
+  }
+}</pre>
+</div></div><p /><p>Updating Data Files </p><p>Adding and removing Data Files </p>
+                    </div>
+
+                                        <div class="pageSection group">
+                        <div class="pageSectionHeader">
+                            <h2 id="attachments" class="pageSectionTitle">Attachments:</h2>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/260734995.tmp">~drawio~5f3210f19aa96500466e388b~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/260964355.tmp">~drawio~5f3210f19aa96500466e388b~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/260767767.tmp">~drawio~5f3210f19aa96500466e388b~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/260866075.tmp">~drawio~5f3210f19aa96500466e388b~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/260800558.tmp">~drawio~5f3210f19aa96500466e388b~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/260735004.tmp">~drawio~5f3210f19aa96500466e388b~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/260997152.tmp">~drawio~5f3210f19aa96500466e388b~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/260833313.tmp">~drawio~5f3210f19aa96500466e388b~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/260571169.tmp">~drawio~5f3210f19aa96500466e388b~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/260866084.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/260964367.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/260571137.tmp">~drawio~5f3210f19aa96500466e388b~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/276758964.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/276365763.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/276496863.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/276693470.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/276890081.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/276988436.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/276758992.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/276464210.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/277152239.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/276726358.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/279773197.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/280068097.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/282591411.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/282427584.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/282656863.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/282689698.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/283050213.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/282591562.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/283017504.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/283017514.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/282493361.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/282526298.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/444171115.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/443974766.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/441517106.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/443941844.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/441353328.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/441582773.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/444138564.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/441582797.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/441582843.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/444138618.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/452001847.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/452001857.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/441419120.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/441353506.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/683147405.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/680067237.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/472712348.png">image-20201208-060515.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/472778025.png">image-20201208-060545.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/696385568.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/688488558.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/696287310.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/696188971.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/696156220.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/696451138.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/696483888.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/696156242.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/707167114.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/704676916.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/707134366.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/707167094.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/707363567.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/704676906.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/707134380.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/707167104.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/707363577.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/753205907.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/752812611.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/752812621.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/758743600.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/276725867.tmp">~hyperpipeline_Diagram.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/260735013.drawio">hyperpipeline_Diagram.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/257884214/260767778.png">hyperpipeline_Diagram.drawio.png</a> (image/png)
+                                <br/>
+                                                    </div>
+                    </div>
+                    
+                                                      
+                </div>             </div> 
+            <div id="footer" role="contentinfo">
+                <section class="footer-body">
+                    <p>Document generated by Confluence on Feb 24, 2022 03:27</p>
+                    <div id="footer-logo"><a href="http://www.atlassian.com/">Atlassian</a></div>
+                </section>
+            </div>
+        </div>     </body>
+</html>

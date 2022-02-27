@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SDI : Ingestion Logging (Data Source/ Data Feeds)</title>
+        <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body class="theme-default aui-theme-default">
+        <div id="page">
+            <div id="main" class="aui-page-panel">
+                <div id="main-header">
+                    <div id="breadcrumb-section">
+                        <ol id="breadcrumbs">
+                            <li class="first">
+                                <span><a href="index.html">SDI</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="Ingestion-Pipelines_1327628295.html">Ingestion Pipelines</a></span>
+                            </li>
+                                                </ol>
+                    </div>
+                    <h1 id="title-heading" class="pagetitle">
+                                                <span id="title-text">
+                            SDI : Ingestion Logging (Data Source/ Data Feeds)
+                        </span>
+                    </h1>
+                </div>
+
+                <div id="content" class="view">
+                    <div class="page-metadata">
+                        
+        
+    
+        
+    
+        
+        
+            Created by <span class='author'> j.wu@vmia.vic.gov.au Wu</span>, last modified on Nov 09, 2021
+                        </div>
+                    <div id="main-content" class="wiki-content group">
+                    <p>Pipeline runs in ADF for ingestion feeds will have logs stored in Cosmos DB.<br/></p><p /><h3 id="IngestionLogging(DataSource/DataFeeds)-IngestionLogKeys">Ingestion Log Keys</h3><div class="table-wrap"><table data-layout="default" data-local-id="519c88e2-4f88-4cf4-91f7-bfe453ee1b92" class="confluenceTable"><colgroup><col style="width: 198.0px;"/><col style="width: 560.0px;"/></colgroup><tbody><tr><th class="confluenceTh"><p><strong>Key</strong></p></th><th class="confluenceTh"><p><strong>Description</strong></p></th></tr><tr><td class="confluenceTd"><p><code>pipelineName</code></p></td><td class="confluenceTd"><p>Name of pipeline that was run (child pipeline)</p></td></tr><tr><td class="confluenceTd"><p><code>RunId</code></p></td><td class="confluenceTd"><p>ID of child pipeline that was run</p></td></tr><tr><td class="confluenceTd"><p><code>isIngestion</code></p></td><td class="confluenceTd"><p>Default value set to <code>true</code> as the logging pipeline is only used for ingestion feeds. As both ingestion and data warehouse logs are stored in the same container, this key allows us to determine that it is an ingestion feed log.</p></td></tr><tr><td class="confluenceTd"><p><code>forcedSuccess</code></p></td><td class="confluenceTd"><p>If set to <code>true</code> , a forced success has occurred with the value being passed down from an activity in the pipeline run. <span style="color: rgb(255,86,48);">&lt;insert sentence about what a forced success is and where it occurs in the pipeline + what it means in terms of why we want it marked true … perhaps include some use cases&gt;</span></p></td></tr><tr><td class="confluenceTd"><p><code>tableName</code></p></td><td class="confluenceTd"><p>Name of table within the data source/ data feed</p></td></tr><tr><td class="confluenceTd"><p><code>sourceSystem</code></p></td><td class="confluenceTd"><p>Source system of data source/ data feed</p></td></tr><tr><td class="confluenceTd"><p><code>timestamp</code></p></td><td class="confluenceTd"><p>Time of the run in UTC</p></td></tr><tr><td class="confluenceTd"><p><code>windowEndTime</code></p></td><td class="confluenceTd"><p>End time of the run in UTC</p></td></tr><tr><td class="confluenceTd"><p><code>hyperPipelineRunId</code></p></td><td class="confluenceTd"><p>ID of the hyper pipeline run (parent pipeline)</p></td></tr></tbody></table></div><p /><p>PARKED NOTES:</p><ul><li><p>[Parent page]: Anything to do with logging can be found in Cosmos Observability DB</p></li><li><p>DWH deployment needed for datasets + linked services</p></li><li><p>Updates needed foy any ingestion tests that points to ADF</p></li><li><p /></li></ul><p /><p><br/><span style="color: rgb(255,86,48);">TODO:</span></p><p>Data source → data feed</p><ul><li><p>Parent page for log docs</p><ul><li><p>[Section] Structure of logs - JSON objects *** to be added to parent page for log docs</p></li><li><p>[Screenshot] Ingestions vs DWH logging </p></li><li><p>[Section]: How to amend keys in logs</p></li></ul></li><li><p>Ingestion logging </p><ul><li><p>[Summary] Summary + problem statement for LA and rationale for transition + link for MS forums w/ same issue</p></li><li><p>[Location] where is the repo</p></li><li><p>[Process flow map] Process flow map of how pipeline run stores logs in cosmos DB</p><ul><li><p>[Screenshot] Example of ADF pipeline run w/ new logging pipeline</p></li></ul></li><li><p>[Table] Current keys in logs + definition</p></li><li><p>[Section] making changes to log keys - include hyperlink for </p></li></ul></li></ul><p /><p />
+                    </div>
+
+                    
+                                                      
+                </div>             </div> 
+            <div id="footer" role="contentinfo">
+                <section class="footer-body">
+                    <p>Document generated by Confluence on Feb 24, 2022 03:32</p>
+                    <div id="footer-logo"><a href="http://www.atlassian.com/">Atlassian</a></div>
+                </section>
+            </div>
+        </div>     </body>
+</html>

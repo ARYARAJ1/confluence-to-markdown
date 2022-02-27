@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SDI : Data Warehouse Loading Pattern Design</title>
+        <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body class="theme-default aui-theme-default">
+        <div id="page">
+            <div id="main" class="aui-page-panel">
+                <div id="main-header">
+                    <div id="breadcrumb-section">
+                        <ol id="breadcrumbs">
+                            <li class="first">
+                                <span><a href="index.html">SDI</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="1205338136.html">Decisions/POCs</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="Data-Warehouse-POC_1070989328.html">Data Warehouse POC</a></span>
+                            </li>
+                                                </ol>
+                    </div>
+                    <h1 id="title-heading" class="pagetitle">
+                                                <span id="title-text">
+                            SDI : Data Warehouse Loading Pattern Design
+                        </span>
+                    </h1>
+                </div>
+
+                <div id="content" class="view">
+                    <div class="page-metadata">
+                        
+        
+    
+        
+    
+        
+        
+            Created by <span class='author'> Sarah Fan (Deactivated)</span>, last modified by <span class='editor'> h.lindsaysmith@vmia.vic.gov.au Lindsay-Smith</span> on Mar 30, 2021
+                        </div>
+                    <div id="main-content" class="wiki-content group">
+                    <h1 id="DataWarehouseLoadingPatternDesign-Introduction">Introduction</h1><p>When loading data from the curated layer to any data warehouse table, the procedure becomes more bespoke due to specific tables and operations required for each data warehouse table. To better manage and simplify the procedure for many data warehouse tables, the following design intends to decouple the procedure and extract generic and reusable components.  </p><p /><style type='text/css'>/*<![CDATA[*/
+div.rbtoc1639539586667 {padding: 0px;}
+div.rbtoc1639539586667 ul {list-style: disc;margin-left: 0px;}
+div.rbtoc1639539586667 li {margin-left: 0px;padding-left: 0px;}
+
+/*]]>*/</style><div class='toc-macro rbtoc1639539586667'>
+<ul class='toc-indentation'>
+<li><span class='TOCOutline'>1</span> <a href='#DataWarehouseLoadingPatternDesign-Introduction'>Introduction</a></li>
+<li><span class='TOCOutline'>2</span> <a href='#DataWarehouseLoadingPatternDesign-Pre-requisite'>Pre-requisite</a></li>
+<li><span class='TOCOutline'>3</span> <a href='#DataWarehouseLoadingPatternDesign-Assumptions'>Assumptions</a></li>
+<li><span class='TOCOutline'>4</span> <a href='#DataWarehouseLoadingPatternDesign-TechnicalDesign'>Technical Design</a>
+<ul class='toc-indentation'>
+<li><span class='TOCOutline'>4.1</span> <a href='#DataWarehouseLoadingPatternDesign-KeyElementDescription'>Key Element Description</a></li>
+<li><span class='TOCOutline'>4.2</span> <a href='#DataWarehouseLoadingPatternDesign-LoadingProcess'>Loading Process</a></li>
+</ul>
+</li>
+<li><span class='TOCOutline'>5</span> <a href='#DataWarehouseLoadingPatternDesign-NameConvention'>Name Convention</a></li>
+</ul>
+</div><h1 id="DataWarehouseLoadingPatternDesign-Pre-requisite">Pre-requisite</h1><p>Several <strong>audit columns </strong>are required in the <strong>data warehouse tables</strong> (for the detail definition of the first four fields, please refer to <a href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/498270277/Data+Lake+and+Data+Warehouse+Rollback+and+Reload#Pre-requisite-for-Rollback" data-card-appearance="inline" rel="nofollow">https://vmia.atlassian.net/wiki/spaces/SDI/pages/498270277/Data+Lake+and+Data+Warehouse+Rollback+and+Reload#Pre-requisite-for-Rollback</a>):</p><ul><li><p><strong>INSERT_RUN_ID</strong> and <strong>UPDATE_RUN_ID </strong>are used to link to ADF <span class="inline-comment-marker" data-ref="0d7293a5-aa0f-4821-b76e-b0388c3a2a5a">pipelines</span>.</p></li><li><p><strong>RECORD_INSERT_DATETIME </strong>and <strong>RECORD_UPDATE_DATETIME</strong> are used for time travel in rollback.</p></li><li><p><strong>IS_DELETE_FLAG</strong>. It is a field used to indicate if a record is deleted in the source system, both hard and soft delete. If the source system has an attribute used to capture soft deletion, in the data warehouse data, standardise it to using this field. This field also needs to exist in the <strong>time-varying tables</strong> at the curated layer (see rationale in the <strong>Assumption </strong>section, point 1).</p></li><li><p><strong>EXP_BATCH_DATETIME</strong>. It is a field used to capture the expected process time if everything run on time. It is different from RECORD_INSERT_DATETIME or RECORD_UPDATE_DATETIME as when back filling, EXP_BATCH_DATETIME will be times in the past while RECORD_INSERT_DATETIME and RECORD_UPDATE_DATETIME will be the time when changes are made to a record during the loading process. This field is used to flag records that are inserted or updated in a batch and enable us to extract only those new rows (i.e. delta) for the given data warehouse batch load. This field also needs to exist in the <strong>time-varying tables</strong> at the curated layer (see rationale in the <strong>Assumption </strong>section, point 2). The field will be populated when insertion happens.</p></li></ul><h1 id="DataWarehouseLoadingPatternDesign-Assumptions">Assumptions</h1><ul><li><p><strong>Inferred deletion</strong> has been handled at the curated layer. IS_DELETE_FLAG is added in time-varying tables to indicate a record is deleted from the source system. Therefore, no inferred deletion needs to be handled in the data warehouse load.</p></li><li><p><strong><span class="inline-comment-marker" data-ref="b1edf3ca-7d10-43a3-acb6-ca1b86477b3d">EXP_BATCH_DATETIME</span></strong><span class="inline-comment-marker" data-ref="b1edf3ca-7d10-43a3-acb6-ca1b86477b3d"> exists and is populated properly in the </span><strong><span class="inline-comment-marker" data-ref="b1edf3ca-7d10-43a3-acb6-ca1b86477b3d">time-varying tables</span></strong><span class="inline-comment-marker" data-ref="b1edf3ca-7d10-43a3-acb6-ca1b86477b3d"> and </span><strong><span class="inline-comment-marker" data-ref="b1edf3ca-7d10-43a3-acb6-ca1b86477b3d">data vault tables</span></strong><span class="inline-comment-marker" data-ref="b1edf3ca-7d10-43a3-acb6-ca1b86477b3d">. The column enables queries to only pick up the new changes rather a full snapshot of a particular period based on the SYSTEM_VALID_FROM and SYSTEM_VALID_TO.</span></p></li></ul><h1 id="DataWarehouseLoadingPatternDesign-TechnicalDesign">Technical Design</h1><p /><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio6044496505152003118">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio6044496505152003118"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio6044496505152003118",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=567148575&diagramName=DW_loading.svg&revision=17&width=1337.5&height=463.01&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=567148575&displayName=DW_loading.svg&contentId=&custContentId=564494947&contentVer=17&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio6044496505152003118&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1162.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"macro\":{\"outputType\":\"html_export\",\"hash\":\"9a3fffa5-be17-4852-b5c3-94aa9fd17a95\",\"id\":\"9a3fffa5-be17-4852-b5c3-94aa9fd17a95\"},\"content\":{\"type\":\"page\",\"version\":\"21\",\"id\":\"567148575\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"567148575\",\"macro.hash\":\"9a3fffa5-be17-4852-b5c3-94aa9fd17a95\",\"page.type\":\"page\",\"macro.localId\":\"4a3d4ffa-5b7e-42cc-827a-9bc37d0b95fa\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=567148575|custContentId=564494947|lbox=1|diagramDisplayName=DW_loading.svg|contentVer=17|revision=17|baseUrl=https://vmia.atlassian.net/wiki|diagramName=DW_loading.svg|pCenter=0|width=1337.5|links=|tbstyle=|height=463.01\",\"space.id\":\"262145\",\"diagramDisplayName\":\"DW_loading.svg\",\"diagramName\":\"DW_loading.svg\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"463.01\",\"space.key\":\"SDI\",\"user.id\":\"60c80092624d700069d68fe9\",\"content.version\":\"21\",\"page.title\":\"Data Warehouse Loading Pattern Design\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"567148575\",\"custContentId\":\"564494947\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"17\",\"page.version\":\"21\",\"revision\":\"17\",\"user.key\":\"8a7f808a79f96b90017a0d42d78807c4\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"567148575\",\"width\":\"1337.5\",\"macro.id\":\"9a3fffa5-be17-4852-b5c3-94aa9fd17a95\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<h2 id="DataWarehouseLoadingPatternDesign-KeyElementDescription">Key Element Description</h2><ul><li><p>The <strong>Source Tables</strong> are the starting point of the data warehouse loading process, and they depend on if we have a data vault besides a star schema consumption layer (see <a href="Data-Warehouse-Pipeline---3.-Process_469860353.html" data-linked-resource-id="469860353" data-linked-resource-version="42" data-linked-resource-type="page">https://vmia.atlassian.net/wiki/spaces/SDI/pages/469860353/Data+Warehouse+Pipeline+-+3.+Process</a> for detail).</p></li><li><p>if we <strong>have a data vault and a star schema consumption layer</strong>,</p><ul><li><p>When<strong> loading into the data vault</strong>, the Source Tables are a number of<strong> time-varying tables </strong>from the curated layer.</p></li><li><p>When <strong>loading into the star schema</strong>, the Source Tables are a number of<strong> data vault tables</strong>.</p></li></ul></li><li><p>if we only have a star schema consumption layer</p><ul><li><p>When <strong>loading into the star schema</strong>, the Source Tables are a number of<strong> time-varying tables </strong>from the curated layer or a staging layer.</p></li></ul></li><li><p>The <strong><span class="inline-comment-marker" data-ref="c9380f29-8ad8-4634-8d99-8f6846b73517">Transient Table </span></strong><span class="inline-comment-marker" data-ref="c9380f29-8ad8-4634-8d99-8f6846b73517">is an </span><strong><span class="inline-comment-marker" data-ref="c9380f29-8ad8-4634-8d99-8f6846b73517">Intermediary Table</span></strong> that has a one-to-one relationship with a data warehouse table. It is a <strong>transient </strong>table in Snowflake existing across sessions (e.g. created by a stored procedure and used by another) and needs to be explicitly dropped. It’s different from a permanent table as it doesn’t have a <a href="https://docs.snowflake.com/en/user-guide/data-failsafe.html" class="external-link" rel="nofollow">Fail-safe</a> period (for recover data outside of time travel retention period) and therefore saves additional cost. It is used to hold the<strong> delta snapshot of the current round</strong> from all the joins and filtering on the Source Tables. </p></li><li><p>The <strong>Data Warehouse Table</strong> can be either a data vault table or a star schema table. Each Data Warehouse Table has one specific Transient Table of the delta snapshot of the current round. <span class="inline-comment-marker" data-ref="19124242-96db-4893-9894-b68b3618aad4">It is a transient table that contains all the </span><strong><span class="inline-comment-marker" data-ref="19124242-96db-4893-9894-b68b3618aad4">audit columns</span></strong><span class="inline-comment-marker" data-ref="19124242-96db-4893-9894-b68b3618aad4"> mentioned in the </span><a href="https://vmia.atlassian.net/wiki/spaces/SDI/pages/567148575/Data+Warehouse+Loading+Pattern+Design#Pre-requisite" rel="nofollow"><strong><span class="inline-comment-marker" data-ref="19124242-96db-4893-9894-b68b3618aad4">Pre-requisite</span></strong></a><span class="inline-comment-marker" data-ref="19124242-96db-4893-9894-b68b3618aad4">.</span></p></li></ul><h2 id="DataWarehouseLoadingPatternDesign-LoadingProcess">Loading Process</h2><ol><li><p>Check the <strong>designation table</strong> if the current batch has been <strong>successfully ingested already</strong> based on the <strong>EXP_BATCH_DATETIME</strong>. If yes, exit the stored procedure and the data warehouse pipeline gracefully. If no, continue to the subsequent steps. This is to handle for 1) <strong>reload after rollback</strong>, and 2) <strong>backfill </strong>when there are only a subset of tables that need to load into the data warehouse and the majority of tables which have already loaded don’t need to rerun the data warehouse loading process. </p></li><li><p>A Lookup Activity in ADF triggers the <strong>bespoke stored procedure</strong> in Snowflake.</p><ol><li><p>Based on the scheduled batch time, <strong>only grab records with changes</strong> from the <strong>driving source table</strong> using <strong>EXP_BATCH_DATETIME</strong>. Perform the required <strong>joins and filtering</strong> to form the <strong>delta snapshot of the current execution.</strong></p></li><li><p><strong>Drop (if exist) and re-create </strong>a <strong>Transient Table</strong> on the fly to store the <strong>delta snapshot of the current round. </strong>The reason not dropping the transient table at the end of the last execution is for easy debugging.</p></li></ol></li><li><p><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">The </span><strong><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">generic stored procedure </span></strong><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">in Snowflake is triggered by another Lookup Activity in ADF and perform a </span><strong><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">type 2 load</span></strong><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">.</span></p><ol><li><p><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">Compare records in the Transformation Object and the Transient Table and identify any </span><strong><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">new, existing and deleted records </span></strong><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">(i.e. records exist in the Transformation Object but not in the Transient Table) based on the primary key.</span></p></li><li><p><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">Perform Insertion and/or updating.</span></p><ol><li><p><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">for </span><strong><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">new </span></strong><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">records</span></p><ol><li><p><strong><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">Insert </span></strong><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">into the destination table and fill in the RECORD_INSERT_DATETIME, INSERT_RUN_ID and EXP_BATCH_DATETIME.</span></p></li></ol></li><li><p><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">for </span><strong><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">existing </span></strong><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">records </span><strong><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">with updates</span></strong></p><ol><li><p><strong><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">End date</span></strong><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1"> the existing record in the destination table and fill the RECORD_UPDATE_DATETIME, UPDATE_RUN_ID and EXP_BATCH_DATETIME.</span></p></li><li><p><strong><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">Insert </span></strong><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">into the destination table and fill in the RECORD_INSERT_DATETIME and INSERT_RUN_ID.</span></p></li></ol></li><li><p><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">for deleted records</span></p><ol><li><p><span class="inline-comment-marker" data-ref="ca87f9f7-b393-4b80-b304-1b1315b9b3a1">Because deletion is already handled in the time-varying tables by indicating in the IS_DELETE_FLAG field, deleted records would be treated the same as attributes update in ii</span>.</p></li></ol></li></ol></li></ol></li></ol><h1 id="DataWarehouseLoadingPatternDesign-NameConvention">Name Convention</h1><div class="table-wrap"><table data-layout="default" class="confluenceTable"><colgroup><col style="width: 113.0px;"/><col style="width: 140.0px;"/><col style="width: 136.0px;"/><col style="width: 179.0px;"/><col style="width: 192.0px;"/></colgroup><tbody><tr><th class="confluenceTh"><p /></th><th class="confluenceTh"><p><strong>Database</strong></p></th><th class="confluenceTh"><p><strong>Schema</strong></p></th><th class="confluenceTh"><p><strong>Table Name</strong></p></th><th class="confluenceTh"><p><strong>Rationale</strong></p></th></tr><tr><td class="confluenceTd"><p>Transient Table</p></td><td class="confluenceTd"><p>As per destination table</p></td><td class="confluenceTd"><p>As per destination table</p></td><td class="confluenceTd"><p>&lt;destination table name&gt;_TRANSIENT</p></td><td class="confluenceTd"><p>Add a suffix rather than a prefix is to organise those tables together with their associated destination table. It is easy to debug.</p></td></tr></tbody></table></div><p />
+                    </div>
+
+                                        <div class="pageSection group">
+                        <div class="pageSectionHeader">
+                            <h2 id="attachments" class="pageSectionTitle">Attachments:</h2>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/567148611.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/567148620.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/567083237.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/567083246.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/567181405.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/564527557.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/564560311.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/564429122.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/567214146.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/567017545.svg">DW_loading.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/564494887.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/564494995.png">DW_loading.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/567083297.svg">DW_loading.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/564429182.png">DW_loading.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/564560395.svg">DW_loading.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/567181462.png">DW_loading.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/574914725.svg">DW_loading.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/574849079.png">DW_loading.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/574980199.svg">DW_loading.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/575045651.png">DW_loading.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/574849095.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_load_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/574980192.tmp">~drawio~5dc205aeb6e6b50c58aeca8b~DW_load_2.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/574947427.svg">DW_load_2.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/567116037.png">DW_load_2.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/564495208.svg">DW_loading.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/574914797.png">DW_loading.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/574849162.svg">DW_loading.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/567116081.png">DW_loading.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/567116233.svg">DW_loading.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/574849258.png">DW_loading.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/574980297.svg">DW_loading.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/574882049.png">DW_loading.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/564495393.svg">DW_loading.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/574882121.png">DW_loading.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/583303383.svg">DW_loading.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/583368907.png">DW_loading.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/583139566.svg">DW_loading.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/583041191.png">DW_loading.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/600637481.svg">DW_loading.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/600637491.png">DW_loading.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/600899624.svg">DW_loading.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/600571989.png">DW_loading.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/600080494.svg">DW_loading.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/600572029.png">DW_loading.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/624657436.svg">DW_loading.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/624722812.png">DW_loading.svg.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/624394397.tmp">~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/624623693.tmp">~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/624394407.tmp">~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/624328833.tmp">~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/624492650.tmp">~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/624459859.tmp">~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/624525413.tmp">~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/624492660.tmp">~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/624394421.tmp">~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/567017540.tmp">~DW_loading.svg.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/564527566.svg">DW_loading.svg</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/567148575/567214154.png">DW_loading.svg.png</a> (image/png)
+                                <br/>
+                                                    </div>
+                    </div>
+                    
+                                                      
+                </div>             </div> 
+            <div id="footer" role="contentinfo">
+                <section class="footer-body">
+                    <p>Document generated by Confluence on Dec 15, 2021 03:39</p>
+                    <div id="footer-logo"><a href="http://www.atlassian.com/">Atlassian</a></div>
+                </section>
+            </div>
+        </div>     </body>
+</html>

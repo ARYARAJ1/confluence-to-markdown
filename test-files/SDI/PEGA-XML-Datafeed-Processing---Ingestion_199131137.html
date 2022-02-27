@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SDI : PEGA XML Datafeed Processing - Ingestion</title>
+        <link rel="stylesheet" href="styles/site.css" type="text/css" />
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body class="theme-default aui-theme-default">
+        <div id="page">
+            <div id="main" class="aui-page-panel">
+                <div id="main-header">
+                    <div id="breadcrumb-section">
+                        <ol id="breadcrumbs">
+                            <li class="first">
+                                <span><a href="index.html">SDI</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="Ingestion-Pipelines_1327628295.html">Ingestion Pipelines</a></span>
+                            </li>
+                                                    <li>
+                                <span><a href="257884214.html">ADF Hyper Pipeline - XML (PEGA)</a></span>
+                            </li>
+                                                </ol>
+                    </div>
+                    <h1 id="title-heading" class="pagetitle">
+                                                <span id="title-text">
+                            SDI : PEGA XML Datafeed Processing - Ingestion
+                        </span>
+                    </h1>
+                </div>
+
+                <div id="content" class="view">
+                    <div class="page-metadata">
+                        
+        
+    
+        
+    
+        
+        
+            Created by <span class='author'> Jason Dang</span>, last modified on Mar 01, 2021
+                        </div>
+                    <div id="main-content" class="wiki-content group">
+                    <p>The section contains the high level pseudocode design for how the PEGA XML data extracts will be processed and transformed. <span class="inline-comment-marker" data-ref="e5fa6ee9-1789-4fb2-905b-7a7c088b4443">Below provides an overview of the overall XML Datafeed ingestion pipeline:</span></p><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio8741671513719176211">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio8741671513719176211"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio8741671513719176211",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=199131137&diagramName=XML_Ingestion_Pipeline2.drawio&revision=3&width=2077&height=591&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=199131137&displayName=XML_Ingestion_Pipeline.drawio&contentId=&custContentId=301793887&contentVer=3&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio8741671513719176211&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1213.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"editor\":{\"version\":\"\\\"v2\\\"\"},\"macro\":{\"outputType\":\"html_export\",\"hash\":\"943f5b08-f850-4f22-95c9-b4cc8d3f4ed8\",\"id\":\"943f5b08-f850-4f22-95c9-b4cc8d3f4ed8\"},\"content\":{\"type\":\"page\",\"version\":\"33\",\"id\":\"199131137\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"199131137\",\"macro.hash\":\"943f5b08-f850-4f22-95c9-b4cc8d3f4ed8\",\"page.type\":\"page\",\"macro.localId\":\"\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=199131137|custContentId=301793887|lbox=1|diagramDisplayName=XML_Ingestion_Pipeline.drawio|contentVer=3|revision=3|baseUrl=https://vmia.atlassian.net/wiki|diagramName=XML_Ingestion_Pipeline2.drawio|pCenter=0|width=2077|links=|tbstyle=|height=591\",\"space.id\":\"262145\",\"diagramDisplayName\":\"XML_Ingestion_Pipeline.drawio\",\"diagramName\":\"XML_Ingestion_Pipeline2.drawio\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"591\",\"space.key\":\"SDI\",\"user.id\":\"5ecf250a4824b20c182c6999\",\"content.version\":\"33\",\"page.title\":\"PEGA XML Datafeed Processing - Ingestion\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"199131137\",\"custContentId\":\"301793887\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"3\",\"page.version\":\"33\",\"revision\":\"3\",\"user.key\":\"8a7f80897281861b017282ee78850105\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"199131137\",\"width\":\"2077\",\"macro.id\":\"943f5b08-f850-4f22-95c9-b4cc8d3f4ed8\",\"editor.version\":\"\\\"v2\\\"\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<h2 id="PEGAXMLDatafeedProcessing-Ingestion-PegaXMLXSDdifferencechecker">Pega XML XSD difference checker</h2><p>Before creating new Configuration Data Objects there will be a check to see if the schema provided by PEGA has changed since the last time the Configuration Data Objects were created.  If there is a change in the schema, this will trigger the component responsible for creating an updated version of the configuration data objects with the new schema file before proceeding with the rest of the XML ingestion pipeline up until loading and structuring the data in Snowflake. Loading the data into the curated layer will not be occur until the schema of the curated tables have been updated to align with the schema changes. Once this is complete, the pipeline can then recommence with the reset of the ingestion pipeline. </p><h3 id="PEGAXMLDatafeedProcessing-Ingestion-BuildingXMLXSDdifferencechecker">Building XML XSD difference checker</h3><p>Below is the pseudocode diagram that defines how the old and new XSD files will be compared to check if there is a difference. </p><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio7216254035216635035">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio7216254035216635035"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio7216254035216635035",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=199131137&diagramName=XSDdifferenceChecker.drawio&revision=3&width=361&height=781&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=199131137&displayName=XSDdifferenceChecker.drawio&contentId=&custContentId=301761111&contentVer=3&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio7216254035216635035&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1213.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"editor\":{\"version\":\"\\\"v2\\\"\"},\"macro\":{\"outputType\":\"html_export\",\"hash\":\"9e6400da-82b9-4162-9b5b-d0c76c0ed870\",\"id\":\"9e6400da-82b9-4162-9b5b-d0c76c0ed870\"},\"content\":{\"type\":\"page\",\"version\":\"33\",\"id\":\"199131137\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"199131137\",\"macro.hash\":\"9e6400da-82b9-4162-9b5b-d0c76c0ed870\",\"page.type\":\"page\",\"macro.localId\":\"\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=199131137|custContentId=301761111|lbox=1|diagramDisplayName=XSDdifferenceChecker.drawio|contentVer=3|revision=3|baseUrl=https://vmia.atlassian.net/wiki|diagramName=XSDdifferenceChecker.drawio|pCenter=0|width=361|links=|tbstyle=|height=781\",\"space.id\":\"262145\",\"diagramDisplayName\":\"XSDdifferenceChecker.drawio\",\"diagramName\":\"XSDdifferenceChecker.drawio\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"781\",\"space.key\":\"SDI\",\"user.id\":\"5ecf250a4824b20c182c6999\",\"content.version\":\"33\",\"page.title\":\"PEGA XML Datafeed Processing - Ingestion\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"199131137\",\"custContentId\":\"301761111\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"3\",\"page.version\":\"33\",\"revision\":\"3\",\"user.key\":\"8a7f80897281861b017282ee78850105\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"199131137\",\"width\":\"361\",\"macro.id\":\"9e6400da-82b9-4162-9b5b-d0c76c0ed870\",\"editor.version\":\"\\\"v2\\\"\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<h2 id="PEGAXMLDatafeedProcessing-Ingestion-PegaXMLSchemaFiletoConfigurationDataObjects">Pega XML Schema File to Configuration Data Objects</h2><p>Alongside the XML files, there will also be a schema file (the xsd mentioned above) provided by PEGA that will be used to validate that the data complies with the expected schema. This schema comes in the form of an XSD file and it is a key metadata object that will be used to build the configuration data objects for the acqusition of the PEGA data source into the data platform. The defusedxml (<a href="https://pypi.org/project/defusedxml/#defusedxml-elementtree" class="external-link" rel="nofollow">https://pypi.org/project/defusedxml/#defusedxml-elementtree</a>) python package will be used to deliver the required functionality. </p><h3 id="PEGAXMLDatafeedProcessing-Ingestion-BuildingConfigurationObjectfortheSORMasterTable">Building Configuration Object for the SOR Master Table</h3><p>Below is the pseudocode diagram that defines how the XSD will be processed to identify the metadata for the SOR Master Table.</p><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio4364266258449029669">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio4364266258449029669"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio4364266258449029669",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=199131137&diagramName=Pseudocode+XSD+to+Config.drawio&revision=5&width=861&height=861&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=199131137&displayName=Pseudocode+XSD+to+Config.drawio&contentId=&custContentId=205619201&contentVer=5&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio4364266258449029669&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1213.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"editor\":{\"version\":\"\\\"v2\\\"\"},\"macro\":{\"outputType\":\"html_export\",\"hash\":\"2338ff6a-ea72-4c05-a800-96c6b9de1de2\",\"id\":\"2338ff6a-ea72-4c05-a800-96c6b9de1de2\"},\"content\":{\"type\":\"page\",\"version\":\"33\",\"id\":\"199131137\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"199131137\",\"macro.hash\":\"2338ff6a-ea72-4c05-a800-96c6b9de1de2\",\"page.type\":\"page\",\"macro.localId\":\"\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=199131137|custContentId=205619201|lbox=1|diagramDisplayName=Pseudocode XSD to Config.drawio|contentVer=5|revision=5|baseUrl=https://vmia.atlassian.net/wiki|diagramName=Pseudocode XSD to Config.drawio|pCenter=0|width=861|links=|tbstyle=|height=861\",\"space.id\":\"262145\",\"diagramDisplayName\":\"Pseudocode XSD to Config.drawio\",\"diagramName\":\"Pseudocode XSD to Config.drawio\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"861\",\"space.key\":\"SDI\",\"user.id\":\"5ecf250a4824b20c182c6999\",\"content.version\":\"33\",\"page.title\":\"PEGA XML Datafeed Processing - Ingestion\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"199131137\",\"custContentId\":\"205619201\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"5\",\"page.version\":\"33\",\"revision\":\"5\",\"user.key\":\"8a7f80897281861b017282ee78850105\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"199131137\",\"width\":\"861\",\"macro.id\":\"2338ff6a-ea72-4c05-a800-96c6b9de1de2\",\"editor.version\":\"\\\"v2\\\"\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<h3 id="PEGAXMLDatafeedProcessing-Ingestion-BuildingConfigurationObjectsfortheSORSubTables">Building Configuration Objects for the SOR Sub Tables</h3><p>Below is the pseudocode diagram that defines how the XSD will be processed to identify the metadata for all the subtables of the respective SOR.</p><div class="ap-container" id="ap-com.mxgraph.confluence.plugins.diagramly__drawio8323293182970202475">
+
+  <div class="ap-content " id="embedded-com.mxgraph.confluence.plugins.diagramly__drawio8323293182970202475"></div>
+  <script class="ap-iframe-body-script">
+  (function(){
+    var data = {
+    "addon_key":"com.mxgraph.confluence.plugins.diagramly",
+    "uniqueKey":"com.mxgraph.confluence.plugins.diagramly__drawio8323293182970202475",
+    "key":"drawio",
+     "moduleType":"dynamicContentMacros",      "moduleLocation":"content",         "cp":"/wiki",
+            "general":"",
+    "w":"",
+    "h":"",
+    "url":"https://ac.draw.io/connect/confluence/viewer-1-4-42.html?ceoId=199131137&diagramName=Pega+Sub+Table+Config+Pseudocode.drawio&revision=3&width=661&height=1211&tbstyle=&simple=0&lbox=1&zoom=1&links=&owningPageId=199131137&displayName=Pega+Sub+Table+Config+Pseudocode.drawio&contentId=&custContentId=216563800&contentVer=3&inComment=0&aspect=&pCenter=0&hiRes=&templateUrl=&tmpBuiltIn=&xdm_e=https%3A%2F%2Fvmia.atlassian.net&xdm_c=channel-com.mxgraph.confluence.plugins.diagramly__drawio8323293182970202475&cp=%2Fwiki&xdm_deprecated_addon_key_do_not_use=com.mxgraph.confluence.plugins.diagramly&lic=active&cv=1.1213.0",
+        "structuredContext": "{\"license\":{\"active\":true},\"confluence\":{\"editor\":{\"version\":\"\\\"v2\\\"\"},\"macro\":{\"outputType\":\"html_export\",\"hash\":\"60767e96-017f-4571-b0e9-a3e303e2f613\",\"id\":\"60767e96-017f-4571-b0e9-a3e303e2f613\"},\"content\":{\"type\":\"page\",\"version\":\"33\",\"id\":\"199131137\"},\"space\":{\"key\":\"SDI\",\"id\":\"262145\"}}}",
+    "contentClassifier":"content",
+    "productCtx":"{\"page.id\":\"199131137\",\"macro.hash\":\"60767e96-017f-4571-b0e9-a3e303e2f613\",\"page.type\":\"page\",\"macro.localId\":\"\",\"simple\":\"0\",\"inComment\":\"0\",\": = | RAW | = :\":\"zoom=1|simple=0|inComment=0|pageId=199131137|custContentId=216563800|lbox=1|diagramDisplayName=Pega Sub Table Config Pseudocode.drawio|contentVer=3|revision=3|baseUrl=https://vmia.atlassian.net/wiki|diagramName=Pega Sub Table Config Pseudocode.drawio|pCenter=0|width=661|links=|tbstyle=|height=1211\",\"space.id\":\"262145\",\"diagramDisplayName\":\"Pega Sub Table Config Pseudocode.drawio\",\"diagramName\":\"Pega Sub Table Config Pseudocode.drawio\",\"links\":\"\",\"tbstyle\":\"\",\"height\":\"1211\",\"space.key\":\"SDI\",\"user.id\":\"5ecf250a4824b20c182c6999\",\"content.version\":\"33\",\"page.title\":\"PEGA XML Datafeed Processing - Ingestion\",\"zoom\":\"1\",\"macro.body\":\"\",\"pageId\":\"199131137\",\"custContentId\":\"216563800\",\"macro.truncated\":\"false\",\"lbox\":\"1\",\"content.type\":\"page\",\"output.type\":\"html_export\",\"contentVer\":\"3\",\"page.version\":\"33\",\"revision\":\"3\",\"user.key\":\"8a7f80897281861b017282ee78850105\",\"baseUrl\":\"https://vmia.atlassian.net/wiki\",\"pCenter\":\"0\",\"content.id\":\"199131137\",\"width\":\"661\",\"macro.id\":\"60767e96-017f-4571-b0e9-a3e303e2f613\",\"editor.version\":\"\\\"v2\\\"\"}",
+    "timeZone":"UTC",
+    "origin":"https://ac.draw.io",
+    "hostOrigin":"https://vmia.atlassian.net",
+    "sandbox":"allow-downloads allow-forms allow-modals allow-popups allow-scripts allow-same-origin allow-top-navigation-by-user-activation allow-storage-access-by-user-activation",    "pearApp":"true",        "apiMigrations": {
+        "gdpr": true
+    }
+}
+;
+    if(window.AP && window.AP.subCreate) {
+      window._AP.appendConnectAddon(data);
+    } else {
+      require(['ac/create'], function(create){
+        create.appendConnectAddon(data);
+      });
+    }
+  }());
+</script>
+</div>
+<h2 id="PEGAXMLDatafeedProcessing-Ingestion-StrippingouterelementofXMLfileinSnowflake">Stripping outer element of XML file in Snowflake</h2><p>As some of the XML files from PEGA have multiple levels of nested elements, this will convert into multiple tables for a single XML file. Additionally some of the files will have large amounts of data and by default Snowflake would load all the contents of the data into a single row and column. Although Snowflake has a size limit of 16 MB for a Variant column type, it does have the option to strip the outer element of the XML data as part of transformation process to copy the data into a table. Therefore a single item element from the XML file will translate into a single row within Snowflake. Below is the sample SQL code that will be used to enable this:</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: sql; gutter: false; theme: Confluence" data-theme="Confluence">Copy into table
+  from @MY_XML_STAGE/TestBIX.xml.gz
+  file_format = (type = &#39;XML&#39; STRIP_OUTER_ELEMENT = true);</pre>
+</div></div><h2 id="PEGAXMLDatafeedProcessing-Ingestion-StructuringXMLfilewithXSDandconfigurationobjects">Structuring XML file with XSD and configuration objects</h2><p><span class="inline-comment-marker" data-ref="7a13f665-bedf-42ae-810d-dd594a413919">Below is a sample of what the dynamic SQL query would look like in Snowflake to structure XML data </span>for a single table. The number of lateral flatten statements will depend on how nested the data elements for the respective table is within the XML. This will be identified via the XSD to configuration conversion process above.</p><div class="code panel pdl" style="border-width: 1px;"><div class="codeContent panelContent pdl">
+<pre class="syntaxhighlighter-pre" data-syntaxhighlighter-params="brush: sql; gutter: false; theme: Confluence" data-theme="Confluence">select 
+    GET( XMLGET( xmldata, &#39;MasterCustomerID&#39;), &#39;$&#39;) as &quot;MasterCustomerID&quot;,
+    GET(xml_doc.value, &#39;@id&#39;),
+    XMLGET(target_table.value, &#39;Column1&#39;):&quot;$&quot;,
+    XMLGET(target_table.value, &#39;Column2&#39;):&quot;$&quot;,
+    XMLGET(target_table.value, &#39;Column3&#39;):&quot;$&quot;,
+    XMLGET(target_table.value, &#39;Column4&#39;):&quot;$&quot;
+from xmltable,
+lateral flatten(to_array(xmltable.xmldata:&quot;$&quot;)) xml_doc,
+lateral flatten(to_array(xml_doc.VALUE:&quot;$&quot;)) nested_level_1
+lateral flatten(to_array(nested_level_1.VALUE:&quot;$&quot;)) nested_level_2
+.
+.
+lateral flatten(to_array(nested_level_n-1.VALUE:&quot;$&quot;)) nested_level_n
+lateral flatten(to_array(nested_level_n.VALUE:&quot;$&quot;)) target_table
+where GET(target_table.value, &#39;@&#39;) = &#39;&lt;Element Tag Name&gt;&#39;
+</pre>
+</div></div><h3 id="PEGAXMLDatafeedProcessing-Ingestion-DesignNotes:">Design Notes:</h3><ul><li><p>The number of lateral flatten commands to run will be determined based on how deeply nested the target table is. This will be determined by the Azure function that parses the XML Schema file (XSD file) and stores this value within the specific configuration objects for each table. </p></li><li><p>In order to link the child element tables to the root element tables, some of the master root column fields will be propagated to the child tables. In the example above, this column is the “MasterCustomerID”.</p></li></ul><p />
+                    </div>
+
+                                        <div class="pageSection group">
+                        <div class="pageSectionHeader">
+                            <h2 id="attachments" class="pageSectionTitle">Attachments:</h2>
+                        </div>
+
+                        <div class="greybox" align="left">
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/205520902.tmp">~drawio~5dc205b07dcf390c61845cd1~Pseudocode XSD to Config.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/198574114.drawio">Pseudocode XSD to Config.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/205684768.png">Pseudocode XSD to Config.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/205520897.tmp">~drawio~5dc205b07dcf390c61845cd1~Pseudocode XSD to Config.drawio.tmp</a> (application/octet-stream)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/205717541.tmp">~Pseudocode XSD to Config.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/205520942.tmp">~Pseudocode XSD to Config.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/205586486.drawio">Pseudocode XSD to Config.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/198869027.png">Pseudocode XSD to Config.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/205717590.drawio">Pseudocode XSD to Config.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/205586496.png">Pseudocode XSD to Config.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/198508588.tmp">~Pseudocode XSD to Config.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216367162.drawio">Pseudocode XSD to Config.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216563782.png">Pseudocode XSD to Config.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210698243.tmp">~drawio~5dc205b07dcf390c61845cd1~XML Splitter.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210632709.drawio">XML Splitter.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210960385.png">XML Splitter.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210665473.tmp">~drawio~5dc205b07dcf390c61845cd1~XML Splitter.drawio.tmp</a> (application/octet-stream)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210829334.drawio">XML Splitter.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210894938.png">XML Splitter.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210960404.tmp">~XML Splitter.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210567220.tmp">~XML Splitter.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210632721.tmp">~XML Splitter.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210632731.tmp">~XML Splitter.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210927694.tmp">~XML Splitter.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210927704.tmp">~XML Splitter.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210567230.tmp">~XML Splitter.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210731045.tmp">~XML Splitter.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210894928.tmp">~XML Splitter.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210862180.tmp">~XML Splitter.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210731011.drawio">XML Splitter.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210763777.png">XML Splitter.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210599939.tmp">~XML Splitter.drawio.tmp</a> (application/octet-stream)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210894987.drawio">XML Structuring.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210731074.png">XML Structuring.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/208470056.tmp">~XML Structuring.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210829359.drawio">XML Structuring.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210895006.png">XML Structuring.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210927733.tmp">~XML Structuring.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210960435.tmp">~XML Structuring.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210600047.tmp">~XML Structuring.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210862228.tmp">~XML Structuring.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210862238.tmp">~XML Structuring.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210567297.tmp">~XML Structuring.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210731105.tmp">~XML Structuring.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/208470087.tmp">~XML Structuring.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210862248.tmp">~XML Structuring.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210731115.tmp">~XML Structuring.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210763856.drawio">XML Structuring.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210829406.png">XML Structuring.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210731060.tmp">~XML Structuring.drawio.tmp</a> (application/octet-stream)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210993226.drawio">XML Structuring.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210829350.png">XML Structuring.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210665589">blob</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210763920">blob</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210600184">blob</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210763930">blob</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210632857">blob</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210927788">blob</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/208470138">blob</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210763940">blob</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/208470148">blob</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210698264">blob</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210698475.drawio">XML_Ingestion_Pipeline.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210895140.png">XML_Ingestion_Pipeline.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210698466.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210895159.drawio">XML_Ingestion_Pipeline.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210567408.png">XML_Ingestion_Pipeline.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210567388.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/212205569.drawio">XML_Ingestion_Pipeline.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/211943435.png">XML_Ingestion_Pipeline.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/212074497.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/211976219.drawio">XML_Ingestion_Pipeline.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/211943445.png">XML_Ingestion_Pipeline.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/212238360.drawio">XML_Ingestion_Pipeline.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/212336655.png">XML_Ingestion_Pipeline.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/211943455.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/212008997.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/211943477.drawio">XML_Ingestion_Pipeline.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/212074576.png">XML_Ingestion_Pipeline.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/212172875.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/octet-stream)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/211943467.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216334339.drawio">XML_Ingestion_Pipeline.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216530945.png">XML_Ingestion_Pipeline.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216498187.drawio">XML_Ingestion_Pipeline.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216498197.png">XML_Ingestion_Pipeline.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216498221.drawio">XML_Ingestion_Pipeline.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216301616.png">XML_Ingestion_Pipeline.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216563727.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/octet-stream)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216530958.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216367131.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216498211.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216465413.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216301606.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216367141.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216530968.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216563747.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210632867.drawio">XML_Ingestion_Pipeline.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210665599.png">XML_Ingestion_Pipeline.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301728378.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/octet-stream)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216301630.tmp">~Pseudocode XSD to Config.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216334399.tmp">~Pseudocode XSD to Config.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216301640.tmp">~Pseudocode XSD to Config.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216465437.tmp">~Pseudocode XSD to Config.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216531003.tmp">~Pseudocode XSD to Config.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216334409.tmp">~Pseudocode XSD to Config.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216301650.tmp">~Pseudocode XSD to Config.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216563772.tmp">~Pseudocode XSD to Config.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216301660.tmp">~Pseudocode XSD to Config.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/205422599.drawio">Pseudocode XSD to Config.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216301670.tmp">~Pseudocode XSD to Config.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/198508564.png">Pseudocode XSD to Config.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/198672402.tmp">~Pseudocode XSD to Config.drawio.tmp</a> (application/octet-stream)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216334473.drawio">Pega Sub Table Config Pseudocode.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216367217.png">Pega Sub Table Config Pseudocode.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216334464.tmp">~Pega Sub Table Config Pseudocode.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216367199.tmp">~Pega Sub Table Config Pseudocode.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216563817.tmp">~Pega Sub Table Config Pseudocode.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216367208.tmp">~Pega Sub Table Config Pseudocode.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216334487.tmp">~Pega Sub Table Config Pseudocode.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/696254527.drawio">Pega Sub Table Config Pseudocode.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/696451180.png">Pega Sub Table Config Pseudocode.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/696451166.tmp">~Pega Sub Table Config Pseudocode.drawio.tmp</a> (application/octet-stream)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301695586.drawio">xml diff checker.drawio</a> (application/vnd.jgraph.mxfile.cached)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301793871.png">xml diff checker.drawio-4742c164ab2d148582ab0d7574dbb134037588bc.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301662744.drawio">xsd checker pseudo.drawio</a> (application/vnd.jgraph.mxfile.cached)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301662749.png">xsd checker pseudo.drawio-4742c164ab2d148582ab0d7574dbb134037588bc.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301793880.drawio">1602039014935-xsd checker pseudo.drawio</a> (application/vnd.jgraph.mxfile.cached)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301892100.png">1602039014935-xsd checker pseudo.drawio-6bd802b23e3de3e9e2733d37ac0bde213c77009a.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/210665604.tmp">~XML_Ingestion_Pipeline.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301892300.drawio">XML_Ingestion_Pipeline2.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301892310.png">XML_Ingestion_Pipeline2.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301761102.tmp">~drawio~5f76b931e31b69006f9a1175~XSDdifferenceChecker.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301498966.tmp">~drawio~5f76b931e31b69006f9a1175~XSDdifferenceChecker.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301662773.drawio">XSDdifferenceChecker.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301826627.png">XSDdifferenceChecker.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301761097.tmp">~drawio~5f76b931e31b69006f9a1175~XSDdifferenceChecker.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301794263.drawio">XSDdifferenceChecker.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301400965.png">XSDdifferenceChecker.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301761225.png">Screen Shot 2020-10-07 at 4.11.36 pm.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301335200.png">Screen Shot 2020-10-07 at 4.12.08 pm.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301728608.tmp">~XML_Ingestion_Pipeline2.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301794080.tmp">~XML_Ingestion_Pipeline2.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301892283.tmp">~XML_Ingestion_Pipeline2.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301728617.tmp">~XML_Ingestion_Pipeline2.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301400832.tmp">~XML_Ingestion_Pipeline2.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301761231.tmp">~XML_Ingestion_Pipeline2.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301695789.tmp">~XML_Ingestion_Pipeline2.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301335231.tmp">~XML_Ingestion_Pipeline2.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301400819.tmp">~XML_Ingestion_Pipeline2.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/423920815.drawio">XML_Ingestion_Pipeline2.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/431816903.png">XML_Ingestion_Pipeline2.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301794229.tmp">~XSDdifferenceChecker.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301892456.tmp">~XSDdifferenceChecker.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301761335.tmp">~XSDdifferenceChecker.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301335354.tmp">~XSDdifferenceChecker.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301794242.tmp">~XSDdifferenceChecker.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301400940.tmp">~XSDdifferenceChecker.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301663123.tmp">~XSDdifferenceChecker.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301663132.tmp">~XSDdifferenceChecker.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301663141.tmp">~XSDdifferenceChecker.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301794101.tmp">~XSDdifferenceChecker.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301662761.drawio">XSDdifferenceChecker.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301498962.png">XSDdifferenceChecker.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301892109.drawio">XML_Ingestion_Pipeline2.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/301400660.png">XML_Ingestion_Pipeline2.drawio.png</a> (image/png)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/696287350.tmp">~Pega Sub Table Config Pseudocode.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/696156259.tmp">~Pega Sub Table Config Pseudocode.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/688488616.tmp">~Pega Sub Table Config Pseudocode.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/696385598.tmp">~Pega Sub Table Config Pseudocode.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216498235.tmp">~Pega Sub Table Config Pseudocode.drawio.tmp</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216563795.drawio">Pega Sub Table Config Pseudocode.drawio</a> (application/vnd.jgraph.mxfile)
+                                <br/>
+                                                            <img src="images/icons/bullet_blue.gif" height="8" width="8" alt=""/>
+                                <a href="attachments/199131137/216563803.png">Pega Sub Table Config Pseudocode.drawio.png</a> (image/png)
+                                <br/>
+                                                    </div>
+                    </div>
+                    
+                                                      
+                </div>             </div> 
+            <div id="footer" role="contentinfo">
+                <section class="footer-body">
+                    <p>Document generated by Confluence on Feb 24, 2022 03:28</p>
+                    <div id="footer-logo"><a href="http://www.atlassian.com/">Atlassian</a></div>
+                </section>
+            </div>
+        </div>     </body>
+</html>
