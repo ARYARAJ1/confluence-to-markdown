@@ -179,11 +179,11 @@ class="ap-content">
 
 -   The core infrastructure and run-time setup for the ADF
     hyper-pipeline will follow
-    <a href="Data_Lab" data-linked-resource-id="981106699"
+    <a href="Data_Lab.md" data-linked-resource-id="981106699"
     data-linked-resource-version="11" data-linked-resource-type="page">Data
     lab</a> approach with most of the logical processing and functions
     re-used from
-    <a href="ADF_Hyper_Pipeline_-_File_Server_Risk_Console_"
+    <a href="ADF_Hyper_Pipeline_-_File_Server_Risk_Console_.md"
     data-linked-resource-id="424116229" data-linked-resource-version="23"
     data-linked-resource-type="page">ADF Hyper Pipeline - File Server (Risk
     Console)</a>

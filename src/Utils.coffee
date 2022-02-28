@@ -105,16 +105,16 @@ class Utils
       for page in pages
         if baseName == page.fileBaseName
           if space == page.space
-            return page.fileNameNew.replace '.md', '' # gitit requires link to pages without .md extension
+            return page.fileNameNew.replace '.md', '.md' # gitit requires link to pages without .md extension
           else
-            return page.spacePath.replace '.md', '' # gitit requires link to pages without .md extension
+            return page.spacePath.replace '.md', '.md' # gitit requires link to pages without .md extension
 
     # link to confluence pageId
     else if matches = href.match /.*pageId=(\d+).*/
       pageId = matches[1]
       for page in pages
         if pageId == page.fileBaseName
-          return page.spacePath.replace '.md', '' # gitit requires link to pages without .md extension
+          return page.spacePath.replace '.md', '.md' # gitit requires link to pages without .md extension
 
     # link outside
     else

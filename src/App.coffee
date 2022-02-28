@@ -4,6 +4,7 @@ class App
   @outputTypesAdd = [
     'markdown_github' # use GitHub markdown variant
     'blank_before_header' # insert blank line before header
+    # 'header_attributes'
 #    'mmd_link_attributes' # use MD syntax for images and links instead of HTML
 #    'link_attributes' # use MD syntax for images and links instead of HTML
   ]
@@ -49,7 +50,7 @@ class App
     for page in pages
       do (page) =>
         if page.fileName == 'index.html'
-          indexHtmlFiles.push @_path.join page.space, 'index' # gitit requires link to pages without .md extension
+          indexHtmlFiles.push @_path.join page.space, 'index.md' # gitit requires link to pages without .md extension
         @convertPage page, dirIn, dirOut, pages
 
     @writeGlobalIndexFile indexHtmlFiles, dirOut if not @utils.isFile dirIn

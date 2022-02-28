@@ -85,7 +85,7 @@ the execution, considering the 4 minutes hard timeout limit
 (<strong>Note</strong>: Snowflake currently cannot emit a notification
 or event to Azure. The notification integration is for Snowflake to
 consume an event from Azure queue storage. See more detail in <a
-href="Data_Warehouse_Pipeline_-_2._Orchestration"
+href="Data_Warehouse_Pipeline_-_2._Orchestration.md"
 data-linked-resource-id="460554258" data-linked-resource-version="16"
 data-linked-resource-type="page">Data Warehouse Pipeline - 2.
 Orchestration</a> <a

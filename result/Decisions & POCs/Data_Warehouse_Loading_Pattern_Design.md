@@ -91,7 +91,7 @@ class="ap-content">
 -   The **Source Tables** are the starting point of the data warehouse
     loading process, and they depend on if we have a data vault besides
     a star schema consumption layer
-    (see <a href="Data_Warehouse_Pipeline_-_3._Process"
+    (see <a href="Data_Warehouse_Pipeline_-_3._Process.md"
     data-linked-resource-id="469860353" data-linked-resource-version="42"
     data-linked-resource-type="page">https://vmia.atlassian.net/wiki/spaces/SDI/pages/469860353/Data+Warehouse+Pipeline+-+3.+Process</a> for
     detail).

@@ -124,7 +124,7 @@ data-linked-resource-type="page">Time Varying Data Load</a> .
 # Checkpoint Parameter and Decision Rules
 
 Same as stated in
-<a href="ADF_Hyper_Pipeline_-_File_Server_Risk_Console_"
+<a href="ADF_Hyper_Pipeline_-_File_Server_Risk_Console_.md"
 data-linked-resource-id="424116229" data-linked-resource-version="23"
 data-linked-resource-type="page">ADF Hyper Pipeline - File Server (Risk
 Console)</a>

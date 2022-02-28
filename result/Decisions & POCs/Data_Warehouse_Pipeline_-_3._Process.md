@@ -289,13 +289,13 @@ class="ap-content">
 
     1.  Grab and manipulate data from one or more tables from the
         curated layer. See more details in
-        <a href="Data_Warehouse_Loading_Pattern_Design"
+        <a href="Data_Warehouse_Loading_Pattern_Design.md"
         data-linked-resource-id="567148575" data-linked-resource-version="21"
         data-linked-resource-type="page">Data Warehouse Loading Pattern
         Design</a>
 
     2.  Ingest data into one data vault table. See more details in
-        <a href="Data_Warehouse_Loading_Pattern_Design"
+        <a href="Data_Warehouse_Loading_Pattern_Design.md"
         data-linked-resource-id="567148575" data-linked-resource-version="21"
         data-linked-resource-type="page">Data Warehouse Loading Pattern
         Design</a>

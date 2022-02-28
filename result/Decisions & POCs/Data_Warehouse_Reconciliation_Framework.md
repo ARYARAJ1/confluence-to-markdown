@@ -2,7 +2,7 @@
 
 # Introduction
 
-As mentioned in <a href="Data_Warehouse_Loading_Pattern_Design"
+As mentioned in <a href="Data_Warehouse_Loading_Pattern_Design.md"
 data-linked-resource-id="567148575" data-linked-resource-version="21"
 data-linked-resource-type="page">Data Warehouse Loading Pattern
 Design</a>, there will be a number of bespoke stored procedures used to
@@ -53,7 +53,7 @@ comparison:
 # Reconciliation Framework Design Options
 
 The options are base on the outcome from
-<a href="Data_Warehouse_Pipeline_-_3._Process"
+<a href="Data_Warehouse_Pipeline_-_3._Process.md"
 data-linked-resource-id="469860353" data-linked-resource-version="42"
 data-linked-resource-type="page">Data Warehouse Pipeline - 3.
 Process</a>.
@@ -76,7 +76,7 @@ refresh and visualise on a pre-created metrics view</strong></p></th>
 <tr class="odd">
 <td class="confluenceTd"><p>Description</p></td>
 <td class="confluenceTd"><p>Extend the existing <a
-href="Data_Warehouse_Pipeline_-_3._Process"
+href="Data_Warehouse_Pipeline_-_3._Process.md"
 data-linked-resource-id="469860353" data-linked-resource-version="42"
 data-linked-resource-type="page">data warehouse hyper pipeline
 design</a> to have one more sub-pipeline for reconciliation. Once all
@@ -103,7 +103,7 @@ class="ap-content">
 </div></td>
 <td class="confluenceTd"><p>Extend on the stored procedures within a
 <strong>ForEach loop</strong> in the existing <a
-href="Data_Warehouse_Pipeline_-_3._Process"
+href="Data_Warehouse_Pipeline_-_3._Process.md"
 data-linked-resource-id="469860353" data-linked-resource-version="42"
 data-linked-resource-type="page">data warehouse hyper pipeline
 design</a>, and add <strong>new bespoke stored procedure</strong>
